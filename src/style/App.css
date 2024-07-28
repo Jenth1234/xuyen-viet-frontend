@@ -1,0 +1,22 @@
+/* src/App.css */
+.App {
+  text-align: center;
+}
+
+form {
+  margin: 20px;
+}
+
+input {
+  margin: 5px;
+}
+
+img {
+  width: 200px;
+  height: 150px;
+  object-fit: cover;
+  margin: 5px;
+}
+@tailwind base;
+@tailwind components;
+@tailwind utilities;

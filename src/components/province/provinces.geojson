@@ -1,0 +1,43 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [106.7009, 10.7769],
+            [106.7009, 10.8],
+            [106.8, 10.8],
+            [106.8, 10.7769],
+            [106.7009, 10.7769]
+          ]
+        ]
+      },
+      "properties": {
+        "name": "Hồ Chí Minh",
+        "color": "#FF5733"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [105.717, 21.078],
+            [105.717, 21.2],
+            [105.9, 21.2],
+            [105.9, 21.078],
+            [105.717, 21.078]
+          ]
+        ]
+      },
+      "properties": {
+        "name": "Hà Nội",
+        "color": "#3399FF"
+      }
+    }
+  ]
+}
