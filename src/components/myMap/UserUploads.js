@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { getProvince, uploadPhoto } from "../../api/callApi"; // Import cả uploadPhoto
-import defaultPhotos from "../../assets/img/defaultPhotos.json"; // Import file JSON chứa ảnh mặc định
+import { getProvince, uploadPhoto } from "../../api/callApi";
+import defaultPhotos from "../../assets/img/defaultPhotos.json";
 
 const UserUploads = () => {
   const [uploads, setUploads] = useState([]);
@@ -11,14 +11,14 @@ const UserUploads = () => {
   useEffect(() => {
     const fetchProvinces = async () => {
       try {
-        const data = await getProvince(); // Gọi API để lấy dữ liệu
+        const data = await getProvince();
         setUploads(data.visitedProvinces); // Lưu dữ liệu vào state
       } catch (error) {
         console.error("Error fetching provinces:", error);
       }
     };
 
-    fetchProvinces(); // Thực thi hàm gọi API
+    fetchProvinces();
   }, []);
 
   // Hàm xử lý khi chọn file
@@ -38,8 +38,8 @@ const UserUploads = () => {
       const token = localStorage.getItem('accessToken');
       await uploadPhoto(selectedFile, selectedProvince, token);
       alert(`Đã tải lên thành công ảnh của tỉnh ${selectedProvince}`);
-      
-      // Sau khi tải ảnh thành công, cập nhật lại danh sách ảnh
+
+      // Cập nhật lại danh sách ảnh sau khi tải lên thành công
       const data = await getProvince();
       setUploads(data.visitedProvinces);
       setSelectedFile(null);
