@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { loginUser } from '../api/callApi';
 import { useNavigate } from 'react-router-dom';
-
+import NavBar from '../components/NavBar'; // Đảm bảo đường dẫn đúng
 const Login = () => {
   const [USERNAME, setUsername] = useState('');
   const [PASSWORD, setPassword] = useState('');
@@ -38,6 +38,7 @@ const Login = () => {
   };
 
   return (
+    
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
       <h1 className="text-4xl font-bold mb-8">Hành Trình Xuyên Việt</h1>
       <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">

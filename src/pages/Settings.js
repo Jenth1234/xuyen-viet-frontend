@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { getUserSettings, editUserSettings } from '../api/callApi'; // Import đúng hàm
-import Sidebar from '../components/Sidebar';
+import NavBar from '../components/NavBar';
 
 const Settings = () => {
   const [userSettings, setUserSettings] = useState({
@@ -55,7 +55,7 @@ const Settings = () => {
 
   return (
     <div className="flex min-h-screen">
-      <Sidebar />
+    <NavBar />
       <div className="flex-1 max-w-md mx-auto p-6 bg-white rounded-lg shadow-md">
         <h1 className="text-3xl font-bold text-center mb-6">Cài đặt giao diện</h1>
         

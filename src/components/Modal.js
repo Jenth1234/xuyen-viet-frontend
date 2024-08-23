@@ -4,8 +4,8 @@ const Modal = React.memo(({ isOpen, onClose, title, children }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-end items-center z-50">
-      <div className="bg-white p-4 rounded-lg shadow-lg w-1/3 m-4 z-60" style={{ marginRight: '70px' }}>
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+      <div className="bg-white p-4 rounded-lg shadow-lg w-1/3 m-4 z-600">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-semibold">{title}</h2>
           <button 

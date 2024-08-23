@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { getProvince } from '../api/callApi'; // Đảm bảo đường dẫn đúng với file chứa các hàm API
-import geojsonData from '../components/province/diaphantinh.json'; // Đảm bảo đường dẫn đúng với vị trí lưu file GeoJSON
+import { getProvince } from '../../api/callApi'; // Đảm bảo đường dẫn đúng với file chứa các hàm API
+import geojsonData from '../province/diaphantinh.json'; // Đảm bảo đường dẫn đúng với vị trí lưu file GeoJSON
 
 const ProvinceList = () => {
   const [provincesData, setProvincesData] = useState([]);

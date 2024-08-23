@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { getUserInfo, editUserInfo } from '../api/callApi';
-import Sidebar from '../components/Sidebar';
+import NavBar from '../components/NavBar';
 
 const Profile = () => {
   const [userSettings, setUserSettings] = useState({
@@ -62,7 +62,7 @@ const Profile = () => {
 
   return (
     <div className="flex min-h-screen">
-      <Sidebar />
+      <NavBar />
       <div className="flex-1 max-w-md mx-auto p-6 bg-white rounded-lg shadow-md">
         <h1 className="text-3xl font-bold text-center mb-6">Cài đặt</h1>
         <div className="mb-4">

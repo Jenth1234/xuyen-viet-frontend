@@ -1,63 +1,27 @@
 import React from 'react';
-import Sidebar from '../components/Sidebar'; // Đảm bảo đường dẫn đúng
-import MapPage from './MapPage';
-import ProvinceList from '../components/ProvinceList';
-import Statistics from '../components/Statistics';
+import NavBar from '../components/NavBar'; // Đảm bảo đường dẫn đúng
+import Explore from '../components/Explore';
+import Footer from '../components/Footer';
 
 const Dashboard = () => {
   return (
-    <div style={styles.container}>
-      <Sidebar />
-      <main style={styles.mainContent}>
-        <h2>Dashboard Content</h2>
-        
-        <div style={styles.contentWrapper}>
-          <div style={styles.mapPageWrapper}>
-            <MapPage />
-          </div>
-          <div style={styles.provinceListWrapper}>
-            {/* <ProvinceList /> */}
-            <Statistics/>
+    <div className="flex flex-col min-h-screen ">
+      
+      
+      <main className="flex-1 p-5 flex flex-col">
+        <div className="mb-10">
+        <NavBar />
+      </div>
+        <Explore />
+        <div className="flex flex-1 mt-5 gap-5">
+          <div className="flex-1 overflow-hidden">
+            {/* Nơi để thêm nội dung khác, ví dụ MapPage hoặc các phần khác */}
           </div>
         </div>
+        <Footer />
       </main>
     </div>
   );
-};
-
-const styles = {
-  container: {
-    display: 'flex',
-  },
-  mainContent: {
-    flex: 1,
-    padding: '20px',
-    display: 'flex',
-    flexDirection: 'column', // Đảm bảo các phần tử con trong mainContent nằm theo chiều dọc
-  },
-  contentWrapper: {
-    flex: 1,
-    display: 'flex',
-    flexDirection: 'row', // Đảm bảo các phần tử con nằm theo chiều ngang
-    gap: '20px', // Khoảng cách giữa các phần tử con
-  },
-  mapPageWrapper: {
-    flex: '0 1 40%', // MapPage chiếm 50% chiều rộng
-    overflow: 'hidden', // Đảm bảo nội dung không tràn ra ngoài
-  },
-  provinceListWrapper: {
-    flex: '1', // ProvinceList chiếm phần còn lại
-    overflow: 'auto', // Đảm bảo ProvinceList có thanh cuộn nếu nội dung quá lớn
-  },
-  buttonContainer: {
-    marginTop: '20px',
-  },
-  button: {
-    marginRight: '10px',
-    padding: '10px 20px',
-    fontSize: '16px',
-    cursor: 'pointer',
-  },
 };
 
 export default Dashboard;

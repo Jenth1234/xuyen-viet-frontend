@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { getProvince } from '../api/callApi';
-import Modal from './Modal'; // Import Modal component
-import NotModal from './NotModal'; // Import NotModal component
-import geojsonData from '../components/province/diaphantinh.json';
+import { getProvince } from '../../api/callApi'; 
+import geojsonData from '../province/diaphantinh.json'; 
+import Modal from '../Modal'; 
+import NotModal from '../NotModal'; 
+import ProvinceList from './ProvinceList'; // Import the new ProvinceList component
 
 const Statistics = () => {
   const [visitedCount, setVisitedCount] = useState(0);
@@ -10,6 +11,7 @@ const Statistics = () => {
   const [notVisitedProvinces, setNotVisitedProvinces] = useState([]);
   const [isVisitedModalOpen, setIsVisitedModalOpen] = useState(false);
   const [isNotVisitedModalOpen, setIsNotVisitedModalOpen] = useState(false);
+  const [showProvinceList, setShowProvinceList] = useState(false); // State to toggle ProvinceList
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 20;
   const totalProvinces = 63;
@@ -86,6 +88,12 @@ const Statistics = () => {
           <h2 className="text-xl font-semibold mb-2">Số tỉnh thành chưa thăm</h2>
           <p className="text-lg font-bold">{totalProvinces - visitedCount}</p>
         </div>
+        <button
+          className="p-4 border rounded-lg shadow cursor-pointer col-span-2"
+          onClick={() => setShowProvinceList(!showProvinceList)}
+        >
+          <h2 className="text-xl font-semibold mb-2">Danh Sách Tỉnh Thành</h2>
+        </button>
       </div>
 
       <Modal isOpen={isVisitedModalOpen} onClose={() => setIsVisitedModalOpen(false)} title="Tỉnh thành đã thăm">
@@ -129,6 +137,8 @@ const Statistics = () => {
           ))}
         </div>
       </NotModal>
+
+      {showProvinceList && <ProvinceList />}
     </div>
   );
 };
