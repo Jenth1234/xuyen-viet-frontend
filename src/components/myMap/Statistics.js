@@ -1,17 +1,17 @@
 import React, { useEffect, useState } from 'react';
-import { getProvince } from '../../api/callApi'; 
-import geojsonData from '../province/diaphantinh.json'; 
-import Modal from '../Modal'; 
-import NotModal from '../NotModal'; 
-import ProvinceList from './ProvinceList'; // Import the new ProvinceList component
+import { getProvince } from '../../api/callApi';
+import geojsonData from '../province/diaphantinh.json';
+import Modal from '../Modal';
+import NotModal from '../NotModal';
+import ProvinceList from './ProvinceList';
 
 const Statistics = () => {
   const [visitedCount, setVisitedCount] = useState(0);
-  const [visitedProvinces, setVisitedProvinces] = useState([]);
+  const [visitedProvinces, setVisitedProvinces] = useState([]); // Đảm bảo khai báo setVisitedProvinces
   const [notVisitedProvinces, setNotVisitedProvinces] = useState([]);
   const [isVisitedModalOpen, setIsVisitedModalOpen] = useState(false);
   const [isNotVisitedModalOpen, setIsNotVisitedModalOpen] = useState(false);
-  const [showProvinceList, setShowProvinceList] = useState(false); // State to toggle ProvinceList
+  const [showProvinceList, setShowProvinceList] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 20;
   const totalProvinces = 63;
@@ -20,7 +20,6 @@ const Statistics = () => {
     const fetchVisitedProvinces = async () => {
       try {
         const data = await getProvince();
-
         if (data && Array.isArray(data.visitedProvinces)) {
           const uniqueVisitedProvinces = data.visitedProvinces.reduce((acc, province) => {
             if (province.STATUS && !acc.includes(province.PROVINCE)) {
@@ -32,7 +31,7 @@ const Statistics = () => {
           const uniqueNotVisitedProvinces = allProvinces.filter(province => !uniqueVisitedProvinces.includes(province));
 
           setVisitedCount(uniqueVisitedProvinces.length);
-          setVisitedProvinces(uniqueVisitedProvinces);
+          setVisitedProvinces(uniqueVisitedProvinces); // Đảm bảo gọi đúng hàm
           setNotVisitedProvinces(uniqueNotVisitedProvinces);
         } else {
           console.error('Data.visitedProvinces is not an array:', data);

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Map from '../components/myMap/Map';
 import ProvinceList from '../components/myMap/ProvinceList';
 import Statistics from '../components/myMap/Statistics';
@@ -6,27 +6,27 @@ import NavBar from '../components/NavBar';
 import Modal from '../components/Modal';
 import UserInfo from '../components/UserInfo';
 import UserUploads from '../components/myMap/UserUploads';
-import { getProvince } from '../api/callApi'; // Import hàm lấy dữ liệu từ API
-import UploadPhotoModal from '../components/myMap/UploadPhotoModal'; // Import modal upload ảnh
+import { getProvince, saveProvince, uploadPhoto } from '../api/callApi'; // Cập nhật hàm API
+import UploadPhotoModal from '../components/myMap/UploadPhotoModal';
 
 const MapPage = () => {
   const [isModalOpen, setModalOpen] = useState(false);
-  const [isUploadModalOpen, setUploadModalOpen] = useState(false); // Modal upload ảnh
-  const [selectedProvince, setSelectedProvince] = useState(null); // Tỉnh đang chọn để upload ảnh
+  const [isUploadModalOpen, setUploadModalOpen] = useState(false);
+  const [selectedProvince, setSelectedProvince] = useState(null);
   const [visitedProvinces, setVisitedProvinces] = useState([]);
 
-  useEffect(() => {
-    const fetchProvinces = async () => {
-      try {
-        const data = await getProvince();
-        setVisitedProvinces(data.visitedProvinces);
-      } catch (error) {
-        console.error('Error fetching provinces:', error);
-      }
-    };
-
-    fetchProvinces();
+  const fetchProvinces = useCallback(async () => {
+    try {
+      const data = await getProvince();
+      setVisitedProvinces(data.visitedProvinces);
+    } catch (error) {
+      console.error('Lỗi khi lấy danh sách tỉnh:', error);
+    }
   }, []);
+
+  useEffect(() => {
+    fetchProvinces();
+  }, [fetchProvinces]);
 
   const openModal = () => setModalOpen(true);
   const closeModal = () => setModalOpen(false);
@@ -38,9 +38,28 @@ const MapPage = () => {
 
   const closeUploadModal = () => setUploadModalOpen(false);
 
+  const handleSaveProvince = async (province) => {
+    try {
+      await saveProvince(province); // Sử dụng hàm saveProvince
+      const data = await getProvince(); // Cập nhật danh sách các tỉnh đã thăm
+      setVisitedProvinces(data.visitedProvinces);
+    } catch (error) {
+      console.error('Lỗi khi lưu tỉnh:', error);
+    }
+  };
+
+  const handleUploadPhoto = useCallback(async (file) => {
+    try {
+      await uploadPhoto(file, selectedProvince);
+      await fetchProvinces(); // Cập nhật danh sách các tỉnh đã thăm
+    } catch (error) {
+      console.error('Lỗi khi tải lên ảnh:', error);
+    }
+  }, [fetchProvinces, selectedProvince]);
+
   const uploads = visitedProvinces.map(province => ({
     province: province.PROVINCE,
-    photos: province.PHOTOS || [] // Đảm bảo PHOTOS là một mảng
+    photos: province.PHOTOS || []
   }));
 
   const user = {
@@ -58,7 +77,7 @@ const MapPage = () => {
           <h2 className="text-2xl font-bold mb-6">Trang Bản Đồ</h2>
           <div className="flex flex-col md:flex-row gap-4 mb-6">
             <div className="w-full md:w-3/4">
-              <Map />
+              <Map onAddProvince={handleSaveProvince} /> {/* Cập nhật prop */}
             </div>
             <aside className="w-full md:w-1/4 md:ml-4">
               <Statistics />
@@ -68,7 +87,7 @@ const MapPage = () => {
             <div className="w-full md:w-1/4">
               <UserInfo user={user} />
             </div>
-            <div className="w-full ">
+            <div className="w-full">
               <h3 className="text-xl font-bold mb-4">Ảnh Tỉnh Thành Đã Tải Lên</h3>
               <UserUploads uploads={uploads} onUploadClick={openUploadModal} />
             </div>
@@ -91,7 +110,8 @@ const MapPage = () => {
       <UploadPhotoModal
         isOpen={isUploadModalOpen}
         onClose={closeUploadModal}
-        province={selectedProvince} // Truyền tỉnh đang chọn vào modal upload
+        province={selectedProvince}
+        onUpload={handleUploadPhoto}
       />
     </div>
   );

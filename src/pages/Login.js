@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { loginUser } from '../api/callApi';
 import { useNavigate } from 'react-router-dom';
 import NavBar from '../components/NavBar'; // Đảm bảo đường dẫn đúng
+
 const Login = () => {
   const [USERNAME, setUsername] = useState('');
   const [PASSWORD, setPassword] = useState('');
@@ -37,8 +38,11 @@ const Login = () => {
     }
   };
 
+  const goToRegister = () => {
+    navigate('/register');
+  };
+
   return (
-    
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
       <h1 className="text-4xl font-bold mb-8">Hành Trình Xuyên Việt</h1>
       <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
@@ -76,6 +80,15 @@ const Login = () => {
           </button>
         </form>
         {error && <p className="text-red-500 text-center mt-4">{error}</p>}
+        <div className="mt-4 text-center">
+          <p className="text-sm">Don't have an account?</p>
+          <button
+            onClick={goToRegister}
+            className="mt-2 text-blue-500 hover:text-blue-700 focus:outline-none"
+          >
+            Register here
+          </button>
+        </div>
       </div>
     </div>
   );
