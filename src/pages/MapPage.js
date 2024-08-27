@@ -7,7 +7,7 @@ import Modal from '../components/Modal';
 import UserInfo from '../components/UserInfo';
 import UserUploads from '../components/myMap/UserUploads';
 import { getProvince, saveProvince, uploadPhoto } from '../api/callApi'; // Cập nhật hàm API
-import UploadPhotoModal from '../components/myMap/UploadPhotoModal';
+import UploadPhotoModal from '../components/myMap/modal/UploadPhotoModal';
 
 const MapPage = () => {
   const [isModalOpen, setModalOpen] = useState(false);
@@ -71,7 +71,8 @@ const MapPage = () => {
 
   return (
     <div className="relative min-h-screen bg-gray-100">
-      <NavBar className="fixed top-0 left-0 w-full z-50 bg-white shadow-md" />
+      {/* <NavBar className="fixed top-0 left-0 w-full z-50 bg-white shadow-md" /> */}
+      <NavBar/>
       <div className="pt-16 md:pt-20">
         <div className="px-4 md:px-8">
           <h2 className="text-2xl font-bold mb-6">Trang Bản Đồ</h2>

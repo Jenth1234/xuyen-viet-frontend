@@ -262,12 +262,12 @@
  * @returns {Promise} - Trả về promise từ axios
  */
 
-  export const uploadPhoto = async (photo, province,token) => {
+  export const uploadPhoto = async (photo, province,date,token) => {
     try {
       const formData = new FormData();
       formData.append('photo', photo);
       formData.append('province', province);
-  
+      formData.append('date', date); // Thêm ngày vào FormData
       
   
       const response = await axios.post(`${API_URL}/upload/upload`, formData, {
@@ -283,4 +283,27 @@
       throw error;
     }
   };
+  // api/callApi.js
+export const updateArrivalDates = async (province, dates) => {
+  try {
+    const response = await fetch(`http://localhost:3600/provinces/${province}/dates`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+      },
+      body: JSON.stringify({ dates })
+    });
+
+    if (!response.ok) {
+      throw new Error('Đã xảy ra lỗi khi cập nhật ngày đến.');
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error("Lỗi khi cập nhật ngày đến:", error);
+    throw error;
+  }
+};
+
   
