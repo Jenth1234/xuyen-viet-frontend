@@ -1,12 +1,13 @@
-// tailwind.config.js
+/** @type {import('tailwindcss').Config} */
 module.exports = {
-  purge: ['./src/**/*.{js,jsx,ts,tsx}', './public/index.html'],
-  darkMode: false, // or 'media' or 'class'
+  darkMode: 'media', // Hoặc xóa dòng này nếu không sử dụng chế độ tối
+  content: [
+    
+    "./src/**/*.{js,jsx,ts,tsx}",
+    // thêm các đường dẫn khác nếu cần
+  ],
   theme: {
     extend: {},
   },
-  variants: {
-    extend: {},
-  },
   plugins: [],
-}
+};
