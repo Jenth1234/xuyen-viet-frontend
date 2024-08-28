@@ -70,19 +70,21 @@
    * @param {string} token - Token xác thực
    * @returns {Promise} - Trả về promise từ axios
    */
-  export const getUserInfo = async (token) => {
-    try {
-      const response = await axios.post(`${API_URL}/user/info`, {}, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-      return response.data;
-    } catch (error) {
-      console.error('Error fetching user info:', error.response?.data || error.message);
-      throw error;
-    }
-  };
+// Hàm getUserInfo trong callApi.js
+export const getUserInfo = async (token) => {
+  try {
+    const response = await axios.post(`${API_URL}/user/info`, {}, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching user info:', error.response?.data || error.message);
+    throw error;
+  }
+};
+
 
   /**
    * Gửi yêu cầu POST để chỉnh sửa thông tin người dùng

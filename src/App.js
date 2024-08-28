@@ -17,7 +17,7 @@ import Chitiet from './pages/chitiet';
 const App = () => {
   return (
     <AuthProvider>
-      <Router>
+      <Router basename="/xuyen-viet-frontend">
         <Routes>
           <Route path="/" element={<Navigate to="/dashboard" />} />
           <Route path="/dashboard" element={<Dashboard />} />

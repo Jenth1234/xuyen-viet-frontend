@@ -9,7 +9,10 @@ import AllPhotosModal from "./modal/AllPhotosModal"; // Import modal mới
 
 const UserUploads = () => {
   const [provinces, setProvinces] = useState([]);
+
   const [arrivalDates, setArrivalDates] = useState({});
+  const [isEditing, setIsEditing] = useState(false);
+  const [newDate, setNewDate] = useState('');
 
   const [uploads, setUploads] = useState([]);
   const [selectedProvince, setSelectedProvince] = useState("");
@@ -36,22 +39,17 @@ const UserUploads = () => {
   useEffect(() => {
     const fetchArrivalDates = async () => {
       try {
-        const response = await getProvince(); // Hàm getProvince lấy dữ liệu
-        const data = await response.json();
-  
-        // Chuyển dữ liệu ARRIVAL_DATES thành định dạng dễ sử dụng
+        const data = await getProvince();
         const datesData = data.visitedProvinces.reduce((acc, province) => {
-          // Tìm ngày gần nhất
           const latestDate = province.ARRIVAL_DATES.reduce((latest, current) => {
             const currentDate = new Date(current.date);
             return !latest || currentDate > latest ? currentDate : latest;
           }, null);
           
-          // Nếu tìm thấy ngày gần nhất, lưu vào acc
           if (latestDate) {
             acc[province.PROVINCE] = latestDate.toISOString().split("T")[0];
           } else {
-            acc[province.PROVINCE] = null; // Không có ngày nào
+            acc[province.PROVINCE] = null;
           }
           
           return acc;
@@ -61,7 +59,7 @@ const UserUploads = () => {
         console.error("Lỗi khi lấy dữ liệu ngày:", error);
       }
     };
-  
+
     fetchArrivalDates();
   }, []);
   
@@ -137,28 +135,28 @@ const UserUploads = () => {
     const defaultProvincePhotos = defaultPhotos[province] || [];
     const uploadedProvincePhotos =
       uploads.find((u) => u.PROVINCE === province)?.PHOTOURLS || [];
+    
+    // Sắp xếp ảnh theo thứ tự: ảnh mặc định trước, ảnh đã tải lên sau
     const combinedPhotos = [
       ...defaultProvincePhotos,
       ...uploadedProvincePhotos,
     ];
-
+  
     // Xác định chỉ số của ảnh được nhấp
     const index = combinedPhotos.indexOf(photoUrl);
-
+  
     if (index !== -1) {
+      // Cập nhật danh sách ảnh và chỉ số ảnh hiện tại
       setPhotoList(combinedPhotos);
       setCurrentPhotoIndex(index);
       setFullSizePhoto(photoUrl);
-
-      // Kiểm tra xem ảnh được nhấp có phải là ảnh cuối cùng của stacked ảnh không
-      const isLastStackedPhoto = combinedPhotos.length > 6 && index >= 6;
-      if (isLastStackedPhoto) {
-        setIsViewingAllPhotos(true); // Mở modal xem tất cả ảnh
-      } else {
-        setIsViewingAllPhotos(false); // Chỉ xem ảnh full-size
-      }
+  
+      // Kiểm tra xem ảnh có phải là ảnh cuối cùng của stacked ảnh không
+      const isViewingAllPhotos = combinedPhotos.length > 6 && index >= 6;
+      setIsViewingAllPhotos(isViewingAllPhotos); // Xác định trạng thái xem tất cả ảnh
     }
   };
+  
 
   const handleCloseFullSizeModal = () => {
     setFullSizePhoto(null);
@@ -172,10 +170,10 @@ const UserUploads = () => {
       {uploads.map((upload, index) => (
         <div
           key={index}
-          className="flex flex-col  p-4 bg-white rounded-lg shadow-md transition-transform transform hover:scale-105"
+          className="flex flex-col  p-4 bg-white rounded-lg shadow-md transition-transform transform "
         >
           <div className="flex space-x-4 ">
-          <div className="flex-[2] border border-blue-500 p-0 rounded-lg">
+          <div className="flex-[2] border  p-0 rounded-lg">
   <div className="w-full">
     {/* Hiển thị các bức ảnh đầu tiên */}
     <div className="mb-4">
@@ -186,7 +184,7 @@ const UserUploads = () => {
             key={`default-${i}`}
             src={photo}
             alt={`Default ${i}`}
-            className="object-cover w-full h-72 rounded-lg border border-gray-400 shadow-md mb-2 cursor-pointer"
+            className="object-cover  w-full h-72 rounded-tl-lg rounded-tr-lg border border-gray-400 shadow-md mb-2 cursor-pointer"
             onClick={() => handlePhotoClick(photo, upload.PROVINCE)}
           />
         ))}
@@ -200,7 +198,7 @@ const UserUploads = () => {
             key={`stacked-${i}`}
             src={photo}
             alt={`Stacked ${i}`}
-            className="absolute object-cover w-24 h-24 sm:w-32 sm:h-32 rounded-lg border border-gray-400 shadow-md"
+            className="absolute object-cover cursor-pointer w-24 h-24 sm:w-32 sm:h-32 rounded-lg border border-gray-400 shadow-md"
             style={{
               top: `${i * 5}px`,
               left: `${i * 5}px`,
@@ -211,15 +209,14 @@ const UserUploads = () => {
         ))}
       </div>
     )}
-
-    {/* Hiển thị tên tỉnh thành */}
-    <h4 className="text-lg font-bold text-gray-800 mb-3">
+    <div className="p-2">  
+       {/* Hiển thị tên tỉnh thành */}
+      <h4 className="text-lg font-bold text-gray-800 mb-3">
       {upload.PROVINCE}
     </h4>
-
-    {/* Hiển thị ngày đến gần nhất */}
-    <div>
-      <h2 className="text-lg font-semibold mb-2">Arrival Date</h2>
+ {/* Hiển thị ngày đến gần nhất */}
+     <div>
+      <h2 className="text-lg font-semibold mb-2">Đặt chân</h2>
       {arrivalDates[upload.PROVINCE] ? (
         <p className="text-gray-700">{arrivalDates[upload.PROVINCE]}</p>
       ) : (
@@ -228,6 +225,12 @@ const UserUploads = () => {
     </div>
   </div>
 </div>
+    </div>
+   
+  
+
+   
+
 
 
 
@@ -236,7 +239,7 @@ const UserUploads = () => {
 
 
 
-            <div className="flex-[5] pl-2 pt-2 pr-2 rounded-lg">
+            <div className="flex-[5] pl-2 pr-2 rounded-lg">
               <div className="flex flex-wrap   rounded-lg">
                 {upload.PHOTOURLS && upload.PHOTOURLS.length > 0 ? (
                   upload.PHOTOURLS.slice(0, 4).map((url, i) => (
@@ -244,7 +247,7 @@ const UserUploads = () => {
                       <img
                         src={url}
                         alt={`Uploaded ${i}`}
-                        className="w-full h-40 object-cover rounded-lg border border-gray-400 shadow-md"
+                        className="w-full h-40 object-cover cursor-pointer hover:scale-90 duration-500 rounded-lg border border-gray-400 shadow-md"
                         onClick={() => handlePhotoClick(url, upload.PROVINCE)} // Truyền thêm province
                       />
                     </div>
@@ -255,7 +258,10 @@ const UserUploads = () => {
                   </p>
                 )}
                 {upload.PHOTOURLS?.length > 5 && (
-                  <div className="relative w-3/12 h-40 mt-6 ml-6">
+                 
+                
+                   <div className="w-1/3 p-2">
+                      <div className="relative  h-40 mt-2 ml-2">
                     {upload.PHOTOURLS.slice(0, 5).map((url, i) => (
                       <img
                         key={`displayed-uploaded-${i}`}
@@ -272,26 +278,31 @@ const UserUploads = () => {
                     ))}
                     {/* Hiển thị số lượng ảnh bị ẩn */}
                     {upload.PHOTOURLS.length > 5 && (
+                       
                       <div className="absolute inset-0 flex items-center justify-center text-gray-700 font-semibold ">
+                         onClick={() => setIsViewingAllPhotos(true)} 
                         <span className="text-xl">
                           +{upload.PHOTOURLS.length - 5}
                         </span>
                       </div>
                     )}
                   </div>
+                   </div>
                 )}
-                <div className="border w-1/3  p-12  ">
-                  <button
-                    onClick={() => handleOpenModal(upload.PROVINCE)} // Thêm onClick để mở modal
-                    className="w-full h-20 flex justify-center items-center p-2 rounded-lg bg-green-600 text-white font-semibold border-2 border-green-600 hover:bg-green-700 hover:border-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 transition"
-                  >
-                    <FontAwesomeIcon
-                      icon={faPlus}
-                      className="w-6 h-6 text-yellow-400 transition-transform duration-500 hover:rotate-90"
-                    />{" "}
-                    {/* Biểu tượng dấu cộng với màu vàng và xoay khi hover */}
-                  </button>
-                </div>
+        <div className=" w-1/3 p-12">
+  <button
+    onClick={() => handleOpenModal(upload.PROVINCE)} // Thêm onClick để mở modal
+    className="w-20 h-20 flex justify-center items-center p-2 rounded-full hover:rotate-180 duration-500 text-white font-semibold border-2 border-green-600 hover:bg-green-700 hover:border-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 transition"
+  >
+    <FontAwesomeIcon
+      icon={faPlus}
+      className="w-6 h-6 text-green-400 transition-transform duration-500"
+    />{" "}
+    {/* Biểu tượng dấu cộng với màu xanh lá và xoay khi hover */}
+  </button>
+</div>
+
+
               </div>
             </div>
           </div>

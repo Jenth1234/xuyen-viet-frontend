@@ -5,8 +5,9 @@ import Statistics from '../components/myMap/Statistics';
 import NavBar from '../components/NavBar';
 import Modal from '../components/Modal';
 import UserInfo from '../components/UserInfo';
+import SummaryInformation from '../components/myMap/SummaryInformation';
 import UserUploads from '../components/myMap/UserUploads';
-import { getProvince, saveProvince, uploadPhoto } from '../api/callApi'; // Cập nhật hàm API
+import { getProvince, saveProvince, uploadPhoto } from '../api/callApi';
 import UploadPhotoModal from '../components/myMap/modal/UploadPhotoModal';
 
 const MapPage = () => {
@@ -14,20 +15,33 @@ const MapPage = () => {
   const [isUploadModalOpen, setUploadModalOpen] = useState(false);
   const [selectedProvince, setSelectedProvince] = useState(null);
   const [visitedProvinces, setVisitedProvinces] = useState([]);
+  const [token, setToken] = useState(null);
 
+  // Fetch token (Assuming it's stored in localStorage)
+  useEffect(() => {
+    const fetchToken = () => {
+      const storedToken = localStorage.getItem('accessToken');
+      setToken(storedToken);
+    };
+    
+    fetchToken();
+  }, []);
+
+  // Fetch provinces data from API
   const fetchProvinces = useCallback(async () => {
     try {
-      const data = await getProvince();
+      const data = await getProvince(token); // Pass token here if needed
       setVisitedProvinces(data.visitedProvinces);
     } catch (error) {
-      console.error('Lỗi khi lấy danh sách tỉnh:', error);
+      console.error('Error fetching provinces:', error);
     }
-  }, []);
+  }, [token]);
 
   useEffect(() => {
     fetchProvinces();
   }, [fetchProvinces]);
 
+  // Handlers for modals
   const openModal = () => setModalOpen(true);
   const closeModal = () => setModalOpen(false);
 
@@ -38,58 +52,51 @@ const MapPage = () => {
 
   const closeUploadModal = () => setUploadModalOpen(false);
 
+  // Save province and refresh the list
   const handleSaveProvince = async (province) => {
     try {
-      await saveProvince(province); // Sử dụng hàm saveProvince
-      const data = await getProvince(); // Cập nhật danh sách các tỉnh đã thăm
-      setVisitedProvinces(data.visitedProvinces);
+      await saveProvince(province, token); // Pass token here if needed
+      await fetchProvinces();
     } catch (error) {
-      console.error('Lỗi khi lưu tỉnh:', error);
+      console.error('Error saving province:', error);
     }
   };
 
+  // Handle photo upload and refresh the list
   const handleUploadPhoto = useCallback(async (file) => {
     try {
-      await uploadPhoto(file, selectedProvince);
-      await fetchProvinces(); // Cập nhật danh sách các tỉnh đã thăm
+      await uploadPhoto(file, selectedProvince, token); // Pass token here if needed
+      await fetchProvinces();
     } catch (error) {
-      console.error('Lỗi khi tải lên ảnh:', error);
+      console.error('Error uploading photo:', error);
     }
-  }, [fetchProvinces, selectedProvince]);
+  }, [fetchProvinces, selectedProvince, token]);
 
+  // Prepare uploads data for display
   const uploads = visitedProvinces.map(province => ({
     province: province.PROVINCE,
     photos: province.PHOTOS || []
   }));
 
-  const user = {
-    avatar: 'https://via.placeholder.com/150',
-    name: 'Nguyễn Văn A',
-    visitedCount: visitedProvinces.length,
-    remainingCount: 63 - visitedProvinces.length
-  };
-
   return (
     <div className="relative min-h-screen bg-gray-100">
-      {/* <NavBar className="fixed top-0 left-0 w-full z-50 bg-white shadow-md" /> */}
-      <NavBar/>
+      <NavBar />
       <div className="pt-16 md:pt-20">
         <div className="px-4 md:px-8">
           <h2 className="text-2xl font-bold mb-6">Trang Bản Đồ</h2>
           <div className="flex flex-col md:flex-row gap-4 mb-6">
             <div className="w-full md:w-3/4">
-              <Map onAddProvince={handleSaveProvince} /> {/* Cập nhật prop */}
+              <Map onAddProvince={handleSaveProvince} />
             </div>
             <aside className="w-full md:w-1/4 md:ml-4">
               <Statistics />
             </aside>
           </div>
           <div className="flex flex-col md:flex-row gap-4 mb-6">
-            <div className="w-full md:w-1/4">
-              <UserInfo user={user} />
+            <div className="w-full md:w-1/5">
+              <SummaryInformation token={token} /> {/* Pass token here */}
             </div>
-            <div className="w-full">
-              <h3 className="text-xl font-bold mb-4">Ảnh Tỉnh Thành Đã Tải Lên</h3>
+            <div className="w-full md:w-4/5 md:ml-4">
               <UserUploads uploads={uploads} onUploadClick={openUploadModal} />
             </div>
           </div>

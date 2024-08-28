@@ -26,18 +26,20 @@ const FullSizePhotoModal = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-75">
-      <div className="relative bg-white p-4 rounded-lg shadow-lg">
+      <div className="relative bg-white p-4 rounded-lg shadow-lg max-w-full max-h-full">
         <button
           onClick={onClose}
           className="absolute top-2 right-2 text-white bg-red-500 rounded-full p-1"
         >
           X
         </button>
-        <img
-          src={photoUrl}
-          alt="Full Size"
-          className="max-w-full max-h-screen rounded-lg"
-        />
+        <div className="flex items-center justify-center">
+          <img
+            src={photoUrl}
+            alt="Full Size"
+            className="max-w-full max-h-full object-contain rounded-lg"
+          />
+        </div>
         <div className="absolute top-1/2 left-4 transform -translate-y-1/2">
           <button
             onClick={handlePrev}
