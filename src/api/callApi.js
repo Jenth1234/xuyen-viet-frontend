@@ -307,5 +307,41 @@ export const updateArrivalDates = async (province, dates) => {
     throw error;
   }
 };
+export const getAllAttraction = async () => {
+  try {
+    const response = await axios.get(`${API_URL}/attraction/attraction`, {}, {
+      headers: {
+      
+      }
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching user info:', error.response?.data || error.message);
+    throw error;
+  }
+};
 
-  
+
+
+
+export const getAttractionDetail = async (id) => {
+  try {
+    // Đảm bảo rằng id không bị undefined hoặc null
+    if (!id) {
+      throw new Error('ID không được cung cấp');
+    }
+
+    // Thay thế `id` trong URL bằng giá trị của biến `id`
+    const response = await axios.get(`${API_URL}/attraction/detailAttraction/${id}`, {
+      headers: {
+        // Thêm các tiêu đề nếu cần
+      }
+    });
+
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching attraction detail:', error.response?.data || error.message);
+    throw error;
+  }
+};
+

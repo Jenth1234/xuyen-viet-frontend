@@ -1,6 +1,7 @@
 import React from 'react';
 import NavBar from '../components/NavBar'; // Đảm bảo đường dẫn đúng
-import Explore from '../components/Explore'; // Điều này sẽ gây xung đột vì bạn đã định nghĩa lại Explore
+import Explore from '../components/explore/Explore'; // Đổi tên để tránh xung đột
+import SphereViewer from '../components/SphereViewer';
 
 const ExplorePage = () => {
   return (
@@ -11,7 +12,8 @@ const ExplorePage = () => {
         <p>Chức năng lập kế hoạch chuyến đi sẽ được thêm vào đây.</p>
         {/* Thêm nội dung và chức năng lập lịch trình tại đây */}
       </div>
-      <Explore />
+      <Explore /> {/* Sử dụng tên mới để tránh xung đột */}
+      <SphereViewer/>
     </>
   );
 };

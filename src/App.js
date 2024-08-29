@@ -13,6 +13,7 @@ import Itinerary from './pages/Itinerary';
 import CreateItinerary from './pages/CreateItinerary';
 import FlightPage from './pages/FlightPage';
 import Chitiet from './pages/chitiet';
+import ProvinceDetail  from './components/explore/ProvinceDetail'
 
 const App = () => {
   return (
@@ -27,6 +28,7 @@ const App = () => {
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/explorePage" element={<ExplorePage />} />
+          <Route path="/attraction/:id" element={<ProvinceDetail />} />
           <Route path="/itinerary" element={<Itinerary />} />
           <Route path="/create-itinerary" element={<CreateItinerary />} />
           <Route path="/flightPage" element={<FlightPage />} />

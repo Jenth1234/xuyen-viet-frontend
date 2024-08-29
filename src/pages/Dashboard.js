@@ -1,6 +1,6 @@
 import React from 'react';
 import NavBar from '../components/NavBar'; // Đảm bảo đường dẫn đúng
-import Explore from '../components/Explore';
+import Explore from '../components/explore/Explore';
 import Footer from '../components/Footer';
 
 const Dashboard = () => {

@@ -27,7 +27,7 @@ const Navbar = () => {
           <button onClick={() => handleNavigation('/')} className="text-gray-700 hover:text-blue-500 font-medium">
             Trang chủ
           </button>
-          <button onClick={() => handleNavigation('/explore')} className="text-gray-700 hover:text-blue-500 font-medium">
+          <button onClick={() => handleNavigation('/explorePage')} className="text-gray-700 hover:text-blue-500 font-medium">
             Khám Phá
           </button>
           <button onClick={() => handleNavigation('/mapPage')} className="text-gray-700 hover:text-blue-500 font-medium">
