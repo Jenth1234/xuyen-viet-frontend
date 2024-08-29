@@ -1,9 +1,9 @@
 {
   "files": {
     "main.css": "/xuyen-viet-frontend/static/css/main.366ab646.css",
-    "main.js": "/xuyen-viet-frontend/static/js/main.82b0c7c2.js",
+    "main.js": "/xuyen-viet-frontend/static/js/main.849fba38.js",
     "static/js/453.f0cb9295.chunk.js": "/xuyen-viet-frontend/static/js/453.f0cb9295.chunk.js",
-    "static/media/logo.jpg": "/xuyen-viet-frontend/static/media/logo.1ad8cf49fb690c772c92.jpg",
+    "static/media/logodd.png": "/xuyen-viet-frontend/static/media/logodd.310dd4880dae124518dc.png",
     "static/media/lienkhuong2.jpg": "/xuyen-viet-frontend/static/media/lienkhuong2.015f47d5a8ec7a4748eb.jpg",
     "index.html": "/xuyen-viet-frontend/index.html",
     "static/media/sprites.svg": "/xuyen-viet-frontend/static/media/sprites.c08944fed399e84633d0.svg",
@@ -12,11 +12,11 @@
     "static/media/background.svg": "/xuyen-viet-frontend/static/media/background.73c746e88409ccb4b512.svg",
     "static/media/compass.svg": "/xuyen-viet-frontend/static/media/compass.0f193cd39061ea43cc46.svg",
     "main.366ab646.css.map": "/xuyen-viet-frontend/static/css/main.366ab646.css.map",
-    "main.82b0c7c2.js.map": "/xuyen-viet-frontend/static/js/main.82b0c7c2.js.map",
+    "main.849fba38.js.map": "/xuyen-viet-frontend/static/js/main.849fba38.js.map",
     "453.f0cb9295.chunk.js.map": "/xuyen-viet-frontend/static/js/453.f0cb9295.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.366ab646.css",
-    "static/js/main.82b0c7c2.js"
+    "static/js/main.849fba38.js"
   ]
 }
