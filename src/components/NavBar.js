@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import logo from '../style/img/logo.jpg';
+import logo from '../style/img/logodd.png';
 import { useAuth } from '../context/AuthContext'; // Đảm bảo đường dẫn chính xác
 
 const Navbar = () => {
