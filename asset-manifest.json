@@ -1,17 +1,22 @@
 {
   "files": {
-    "main.css": "/xuyen-viet-frontend/static/css/main.2e007f2d.css",
-    "main.js": "/xuyen-viet-frontend/static/js/main.559558d2.js",
-    "static/js/453.5fd139db.chunk.js": "/xuyen-viet-frontend/static/js/453.5fd139db.chunk.js",
+    "main.css": "/xuyen-viet-frontend/static/css/main.366ab646.css",
+    "main.js": "/xuyen-viet-frontend/static/js/main.82b0c7c2.js",
+    "static/js/453.f0cb9295.chunk.js": "/xuyen-viet-frontend/static/js/453.f0cb9295.chunk.js",
     "static/media/logo.jpg": "/xuyen-viet-frontend/static/media/logo.1ad8cf49fb690c772c92.jpg",
     "static/media/lienkhuong2.jpg": "/xuyen-viet-frontend/static/media/lienkhuong2.015f47d5a8ec7a4748eb.jpg",
     "index.html": "/xuyen-viet-frontend/index.html",
-    "main.2e007f2d.css.map": "/xuyen-viet-frontend/static/css/main.2e007f2d.css.map",
-    "main.559558d2.js.map": "/xuyen-viet-frontend/static/js/main.559558d2.js.map",
-    "453.5fd139db.chunk.js.map": "/xuyen-viet-frontend/static/js/453.5fd139db.chunk.js.map"
+    "static/media/sprites.svg": "/xuyen-viet-frontend/static/media/sprites.c08944fed399e84633d0.svg",
+    "static/media/grabbing.svg": "/xuyen-viet-frontend/static/media/grabbing.92ec62eb995e79248066.svg",
+    "static/media/grab.svg": "/xuyen-viet-frontend/static/media/grab.6a052e927d39314632fd.svg",
+    "static/media/background.svg": "/xuyen-viet-frontend/static/media/background.73c746e88409ccb4b512.svg",
+    "static/media/compass.svg": "/xuyen-viet-frontend/static/media/compass.0f193cd39061ea43cc46.svg",
+    "main.366ab646.css.map": "/xuyen-viet-frontend/static/css/main.366ab646.css.map",
+    "main.82b0c7c2.js.map": "/xuyen-viet-frontend/static/js/main.82b0c7c2.js.map",
+    "453.f0cb9295.chunk.js.map": "/xuyen-viet-frontend/static/js/453.f0cb9295.chunk.js.map"
   },
   "entrypoints": [
-    "static/css/main.2e007f2d.css",
-    "static/js/main.559558d2.js"
+    "static/css/main.366ab646.css",
+    "static/js/main.82b0c7c2.js"
   ]
 }
