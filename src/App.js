@@ -10,16 +10,20 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import ExplorePage from './pages/ExplorePage';
 import Itinerary from './pages/Itinerary';
-import CreateItinerary from './pages/CreateItinerary';
+import CreateItinerary from './components/itinerary/CreateItinerary';
 import FlightPage from './pages/FlightPage';
-import Chitiet from './pages/chitiet';
-import ProvinceDetail  from './components/explore/ProvinceDetail'
-
+import DetailItinerary from './components/itinerary/DetailItinerary';
+import AttractionList  from './components/explore/AttractionList'
+import NavBar from './components/NavBar';
+import AttractionDetail from './components/explore/AttractionDetail';
 const App = () => {
   return (
+ 
     <AuthProvider>
       <Router basename="/xuyen-viet-frontend">
+       <NavBar />
         <Routes>
+            
           <Route path="/" element={<Navigate to="/dashboard" />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/mapPage" element={<MapPage />} />
@@ -28,11 +32,12 @@ const App = () => {
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/explorePage" element={<ExplorePage />} />
-          <Route path="/attraction/:id" element={<ProvinceDetail />} />
+          <Route path="/attraction/:provinceName" element={<AttractionList />} />
+          <Route path="/attraction/:provinceName/:type/:provinceNameSub" element={<AttractionDetail />} />
           <Route path="/itinerary" element={<Itinerary />} />
           <Route path="/create-itinerary" element={<CreateItinerary />} />
           <Route path="/flightPage" element={<FlightPage />} />
-          <Route path="/chitiet" element={<Chitiet />} />
+          <Route path="/itinerary/:itineraryId" element={<DetailItinerary />} />
         </Routes>
       </Router>
     </AuthProvider>

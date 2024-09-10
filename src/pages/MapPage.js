@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import Map from '../components/myMap/Map';
 import ProvinceList from '../components/myMap/ProvinceList';
 import Statistics from '../components/myMap/Statistics';
-import NavBar from '../components/NavBar';
+
 import Modal from '../components/Modal';
 import UserInfo from '../components/UserInfo';
 import SummaryInformation from '../components/myMap/SummaryInformation';
@@ -80,7 +80,7 @@ const MapPage = () => {
 
   return (
     <div className="relative min-h-screen bg-gray-100">
-      <NavBar />
+
       <div className="pt-16 md:pt-20">
         <div className="px-4 md:px-8">
           <h2 className="text-2xl font-bold mb-6">Trang Bản Đồ</h2>

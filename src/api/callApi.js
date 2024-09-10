@@ -330,7 +330,7 @@ export const getAttractionDetail = async (id) => {
     if (!id) {
       throw new Error('ID không được cung cấp');
     }
-
+    console.log(id)
     // Thay thế `id` trong URL bằng giá trị của biến `id`
     const response = await axios.get(`${API_URL}/attraction/detailAttraction/${id}`, {
       headers: {
@@ -339,9 +339,152 @@ export const getAttractionDetail = async (id) => {
     });
 
     return response.data;
+   
   } catch (error) {
     console.error('Error fetching attraction detail:', error.response?.data || error.message);
     throw error;
   }
 };
 
+export const getAllProvincesWithFestivals = async () => {
+  try {
+    const response = await axios.get(`${API_URL}/attraction/getAllFestival`, {
+      headers: {
+        // Thêm các tiêu đề cần thiết nếu có
+        'Content-Type': 'application/json',
+        // 'Authorization': 'Bearer YOUR_TOKEN' // Nếu cần xác thực
+      }
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching provinces with festivals:', error.response?.data || error.message);
+    throw error;
+  }
+};
+export const getAllProvincesWithByViews = async () => {
+  try {
+    const response = await axios.get(`${API_URL}/attraction/getAllByViews`, {
+      headers: {
+        // Thêm các tiêu đề cần thiết nếu có
+        'Content-Type': 'application/json',
+        // 'Authorization': 'Bearer YOUR_TOKEN' // Nếu cần xác thực
+      }
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching provinces with festivals:', error.response?.data || error.message);
+    throw error;
+  }
+};
+export const getAllProvincesWithByCultural = async () => {
+  try {
+    const response = await axios.get(`${API_URL}/attraction/getAllCultural`, {
+      headers: {
+        // Thêm các tiêu đề cần thiết nếu có
+        'Content-Type': 'application/json',
+        // 'Authorization': 'Bearer YOUR_TOKEN' // Nếu cần xác thực
+      }
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching provinces with festivals:', error.response?.data || error.message);
+    throw error;
+  }
+};
+export const getAllProvincesWithByBeaches = async () => {
+  try {
+    const response = await axios.get(`${API_URL}/attraction/getAllBeaches`, {
+      headers: {
+        // Thêm các tiêu đề cần thiết nếu có
+        'Content-Type': 'application/json',
+        // 'Authorization': 'Bearer YOUR_TOKEN' // Nếu cần xác thực
+      }
+    });
+
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching provinces with festivals:', error.response?.data || error.message);
+    throw error;
+  }
+};
+export const getAttractionById = async (id) => {
+  try {
+    const response = await axios.get(`${API_URL}/attraction/getAttractionById/${id}`, {
+      headers: {
+        'Content-Type': 'application/json', // Thay đổi nếu cần thiết
+      }
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching user info:', error.response?.data || error.message);
+    throw error;
+  }
+};
+export const getAttractionByName = async (name) => {
+  try {
+    const response = await axios.get(`${API_URL}/attraction/getAttractionByName/${encodeURIComponent(name)}`, {
+      headers: {
+        'Content-Type': 'application/json', // Thay đổi nếu cần thiết
+      }
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching attraction by name:', error.response?.data || error.message);
+    throw error;
+  }
+};
+export const getAttractionSubField = async (name,typeField,field) => {
+  try {
+    console.log('Province Name:', name);
+console.log('Province Type:', typeField);
+console.log('Field:', field);
+    const response = await axios.get(`${API_URL}/attraction/getAttractionSubField/${encodeURIComponent(name)}/${encodeURIComponent(typeField)}/${encodeURIComponent(field)}`, {
+      headers: {
+        'Content-Type': 'application/json', // Thay đổi nếu cần thiết
+      }
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching attraction subfield info:', error.response?.data || error.message);
+    throw error;
+  }
+};
+
+
+
+
+
+export const createItinerary = async (itineraryData, userId) => {
+  try {
+    // Tạo đối tượng dữ liệu để gửi đi, bao gồm userId và itineraryData
+    const dataToSend = {
+      ...itineraryData,
+      userId, // Thêm userId vào dữ liệu gửi
+    };
+
+    // Lấy mã thông báo từ localStorage
+    const token = localStorage.getItem('accessToken');
+
+    if (!token) {
+      throw new Error('Authorization token is required');
+    }
+
+    const response = await fetch(`${API_URL}/itinerary/create`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`, // Thêm mã thông báo vào tiêu đề
+      },
+      body: JSON.stringify(dataToSend),
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to create itinerary');
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('Error creating itinerary:', error);
+    throw error;
+  }
+};

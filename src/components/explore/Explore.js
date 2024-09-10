@@ -1,17 +1,36 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { getAllAttraction } from '../../api/callApi'; // Hàm gọi API để lấy tất cả các tỉnh
+import AttractionSlider from './AttractionSlider';
+import {
+  getAllProvincesWithFestivals,
+  getAllProvincesWithByViews,
+  getAllProvincesWithByCultural,
+  getAllProvincesWithByBeaches,
+  getAttractionByName,
+} from '../../api/callApi';
+import Search from '../../components/Search';
 
 const Explore = () => {
-  const [provinces, setProvinces] = useState([]);
-  const navigate = useNavigate(); // Khởi tạo useNavigate
+  const [festivalsProvinces, setFestivalsProvinces] = useState([]);
+  const [viewsProvinces, setViewsProvinces] = useState([]);
+  const [culturalProvinces, setCulturalProvinces] = useState([]);
+  const [beachesProvinces, setBeachesProvinces] = useState([]);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [searchResults, setSearchResults] = useState([]);
 
   useEffect(() => {
-    // Fetch all provinces data when component mounts
     const fetchData = async () => {
       try {
-        const data = await getAllAttraction();
-        setProvinces(data);
+        const [festivalsResponse, viewsResponse, culturalResponse, beachesResponse] = await Promise.all([
+          getAllProvincesWithFestivals(),
+          getAllProvincesWithByViews(),
+          getAllProvincesWithByCultural(),
+          getAllProvincesWithByBeaches(),
+        ]);
+
+        setFestivalsProvinces(festivalsResponse.success ? festivalsResponse.data : []);
+        setViewsProvinces(viewsResponse.success ? viewsResponse.data : []);
+        setCulturalProvinces(culturalResponse.success ? culturalResponse.data : []);
+        setBeachesProvinces(beachesResponse.success ? beachesResponse.data : []);
       } catch (error) {
         console.error('Error fetching provinces data:', error);
       }
@@ -20,22 +39,44 @@ const Explore = () => {
     fetchData();
   }, []);
 
-  const handleProvinceClick = (provinceId, provinceName) => {
-    navigate(`/attraction/${provinceId}`, { state: { name: provinceName } }); // Điều hướng đến trang chi tiết tỉnh với tên tỉnh
+  useEffect(() => {
+    const fetchSearchResults = async () => {
+      if (searchTerm) {
+        try {
+          const response = await getAttractionByName(searchTerm);
+          setSearchResults(response.success ? response.data : []);
+        } catch (error) {
+          console.error('Error searching attraction by name:', error);
+          setSearchResults([]);
+        }
+      } else {
+        setSearchResults([]);
+      }
+    };
+
+    fetchSearchResults();
+  }, [searchTerm]);
+
+  const filterProvinces = (provinces) => {
+    return provinces.filter((province) =>
+      province.NAME.toLowerCase().includes(searchTerm.toLowerCase())
+    );
   };
 
   return (
-    <div className="max-w-4xl mx-auto p-8">
-      {provinces.map((province) => (
-        <div key={province._id} className="mb-12">
-          <h1
-            className="text-4xl font-bold mb-4 cursor-pointer"
-            onClick={() => handleProvinceClick(province._id, province.name)} // Truyền ID và tên tỉnh
-          >
-            {province.name}
-          </h1>
-        </div>
-      ))}
+    <div>
+      <Search searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
+
+      {searchTerm ? (
+        <AttractionSlider title="Kết quả tìm kiếm" provinces={searchResults} />
+      ) : (
+        <>
+          <AttractionSlider title="Địa điểm đáng đi trong năm" provinces={filterProvinces(festivalsProvinces)} />
+          <AttractionSlider title="Điểm đến dành cho kỳ nghỉ" provinces={filterProvinces(viewsProvinces)} />
+          <AttractionSlider title="Địa điểm có di sản văn hóa và lịch sử" provinces={filterProvinces(culturalProvinces)} />
+          <AttractionSlider title="Trải nghiệm các lễ hội và sự kiện đặc biệt" provinces={filterProvinces(beachesProvinces)} />
+        </>
+      )}
     </div>
   );
 };

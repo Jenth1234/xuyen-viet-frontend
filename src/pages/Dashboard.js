@@ -1,5 +1,5 @@
 import React from 'react';
-import NavBar from '../components/NavBar'; // Đảm bảo đường dẫn đúng
+// import NavBar from '../components/NavBar'; // Đảm bảo đường dẫn đúng
 import Explore from '../components/explore/Explore';
 import Footer from '../components/Footer';
 
@@ -10,7 +10,7 @@ const Dashboard = () => {
       
       <main className="flex-1 p-5 flex flex-col">
         <div className="mb-10">
-        <NavBar />
+        {/* <NavBar /> */}
       </div>
         <Explore />
         <div className="flex flex-1 mt-5 gap-5">

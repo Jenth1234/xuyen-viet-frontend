@@ -17,7 +17,7 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="bg-white shadow-md fixed top-0 left-0 w-full  ">
+    <nav className="fixed z-50 bg-white shadow-md  top-0 left-0 w-full  ">
       <div className="container mx-auto px-8 py-2 flex justify-between items-center">
         <div className="flex items-center ml-8">
           <img src={logo} alt="Logo" className="h-16" />
@@ -56,12 +56,12 @@ const Navbar = () => {
             </button>
           ) : (
             <>
-              <button onClick={() => handleNavigation('/login')} className="text-blue-500 hover:text-blue-700 font-medium">
+              <button onClick={() => handleNavigation('/login')} className="bg-black text-white  md:rounded-lg p-3   hover:bg-green-800 font-medium">
                 Đăng nhập
               </button>
-              <button onClick={() => handleNavigation('/register')} className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+              {/* <button onClick={() => handleNavigation('/register')} className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
                 Đăng ký
-              </button>
+              </button> */}
             </>
           )}
         </div>

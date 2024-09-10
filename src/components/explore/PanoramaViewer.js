@@ -1,6 +1,5 @@
-// src/components/PanoramaViewer.js
 import React from 'react';
-import { Pannellum } from 'pannellum-react'; // Đảm bảo sử dụng đúng component từ thư viện
+import ReactPannellum from 'react-pannellum';
 
 const PanoramaViewer = ({ imageUrl, onClose }) => {
   return (
@@ -11,14 +10,16 @@ const PanoramaViewer = ({ imageUrl, onClose }) => {
       >
         Close
       </button>
-      <Pannellum
+      <ReactPannellum
         width="85%"
         height="85%"
         image={imageUrl}
-        pitch={5} // Điều chỉnh góc pitch nếu cần
-        yaw={0} // Cài đặt góc yaw là 180 độ
-        hfov={110} // Cài đặt góc Field of View ngang
+        pitch={0}
+        yaw={0}
+        hfov={100}
         autoLoad
+        onLoad={() => console.log('Pannellum viewer loaded')}
+        onError={() => console.error('Pannellum viewer failed to load')}
       />
     </div>
   );
