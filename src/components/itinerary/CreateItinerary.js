@@ -1,17 +1,18 @@
-// src/pages/CreateItinerary.js
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { createItinerary } from '../../api/callApi'; // Nhập hàm gọi API
+import { createItinerary } from '../../api/callApi';
+import { useAuth } from '../../context/AuthContext'; // Sử dụng useAuth để lấy thông tin người dùng
 
 const CreateItinerary = () => {
   const [formData, setFormData] = useState({
-    name: '',        // Thêm tên chuyến đi
+    name: '',
     location: '',
     startDate: '',
     endDate: ''
   });
-
+  const [error, setError] = useState('');
   const navigate = useNavigate();
+  const { userId } = useAuth(); // Lấy userId từ useAuth
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -21,25 +22,34 @@ const CreateItinerary = () => {
   const calculateDays = (startDate, endDate) => {
     const start = new Date(startDate);
     const end = new Date(endDate);
+    if (end < start) {
+      setError('Ngày kết thúc không thể trước ngày bắt đầu.');
+      return 0;
+    }
     const timeDiff = end - start;
-    return Math.ceil(timeDiff / (1000 * 60 * 60 * 24)) + 1; // +1 để bao gồm ngày bắt đầu
+    return Math.ceil(timeDiff / (1000 * 60 * 60 * 24)) + 1;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError('');
+
+    if (!formData.startDate || !formData.endDate) {
+      setError('Vui lòng chọn cả ngày bắt đầu và ngày kết thúc.');
+      return;
+    }
 
     try {
-      // Tính số ngày và thêm vào formData
       const daysCount = calculateDays(formData.startDate, formData.endDate);
-      const dataToSend = { ...formData, days: daysCount };
+      if (daysCount <= 0) return; // Nếu số ngày không hợp lệ, không tiếp tục gửi dữ liệu
 
-      // Gọi API để tạo lịch trình mới
-      const result = await createItinerary(dataToSend, 'user-id'); // Thay 'user-id' bằng ID người dùng thực tế
+      const dataToSend = { ...formData, days: daysCount, startDate: formData.startDate, endDate: formData.endDate };
+      const result = await createItinerary(dataToSend, userId); // Sử dụng userId từ context
 
-      // Chuyển hướng đến trang chi tiết với số ngày
-      navigate(`/itinerary/${result.itineraryId}`, { state: { days: daysCount } });
+      navigate(`/itinerary/${result._id}`, { state: { days: daysCount, startDate: formData.startDate, endDate: formData.endDate } });
     } catch (error) {
       console.error('Error creating itinerary:', error);
+      setError('Đã xảy ra lỗi khi tạo lịch trình.');
     }
   };
 
@@ -53,6 +63,7 @@ const CreateItinerary = () => {
 
         <div className="mb-8 p-6 border rounded shadow-sm bg-white">
           <h2 className="text-2xl font-semibold mb-4">Thêm Lịch Trình</h2>
+          {error && <p className="text-red-500 mb-4">{error}</p>}
           <form onSubmit={handleSubmit}>
             <div className="mb-4">
               <label htmlFor="name" className="block text-gray-700">Tên Chuyến Đi</label>

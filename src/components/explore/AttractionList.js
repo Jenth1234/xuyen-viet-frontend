@@ -18,6 +18,7 @@ const AttractionList = () => {
     const fetchData = async () => {
       try {
         const response = await getAttractionByName(provinceName);
+        console.log(response)
         if (response.data && response.data.length > 0) {
           setProvince(response.data[0]);
         } 

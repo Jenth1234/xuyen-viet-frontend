@@ -1,4 +1,5 @@
   import axios from 'axios';
+import Itinerary from '../pages/Itinerary';
 
   // URL của API backend
   const API_URL = 'http://localhost:3600';
@@ -488,3 +489,51 @@ export const createItinerary = async (itineraryData, userId) => {
     throw error;
   }
 };
+
+// callapi.js
+
+// Hàm gửi yêu cầu tạo hoạt động mới
+export const createActivity = async (activityData) => {
+  try {
+    const response = await fetch(`${API_URL}/activity/create`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(activityData),
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      return data; // Trả về dữ liệu nhận được từ server
+    } else {
+      throw new Error('Lỗi khi tạo hoạt động');
+    }
+  } catch (error) {
+    console.error('Lỗi kết nối API:', error);
+    throw error; // Đẩy lỗi lên để có thể xử lý ở nơi gọi hàm này
+  }
+};
+export const getItinerary = async (itineraryId) => {
+  try {
+    const token = localStorage.getItem('accessToken');
+    const response = await fetch(`${API_URL}/itinerary/getById/${itineraryId}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`, // Thêm mã thông báo vào tiêu đề
+      },
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      return data; // Trả về dữ liệu nhận được từ server
+    } else {
+      throw new Error('Lỗi khi lấy lộ trình: ' + response.statusText);
+    }
+  } catch (error) {
+    console.error('Lỗi kết nối API:', error);
+    throw error; // Đẩy lỗi lên để có thể xử lý ở nơi gọi hàm này
+  }
+};
+
