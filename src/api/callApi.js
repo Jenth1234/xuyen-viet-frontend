@@ -537,3 +537,57 @@ export const getItinerary = async (itineraryId) => {
   }
 };
 
+export const getActivity = async (activityId) => {
+  try {
+  
+    const response = await fetch(`${API_URL}/itinerary/getActivityById/${activityId}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+    // Thêm mã thông báo vào tiêu đề
+      },
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      return data; // Trả về dữ liệu nhận được từ server
+    } else {
+      throw new Error('Lỗi khi lấy activity: ' + response.statusText);
+    }
+  } catch (error) {
+    console.error('Lỗi kết nối API:', error);
+    throw error; // Đẩy lỗi lên để có thể xử lý ở nơi gọi hàm này
+  }
+};
+
+export const getItineraryByUserId = async () => {
+  try {
+    const token = localStorage.getItem('accessToken');
+    const response = await fetch(`${API_URL}/itinerary/getByUserId`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`, // Thêm mã thông báo vào tiêu đề
+      },
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      return data; // Trả về dữ liệu nhận được từ server
+    } else {
+      throw new Error('Lỗi khi lấy lộ trình theo id: ' + response.statusText);
+    }
+  } catch (error) {
+    console.error('Lỗi kết nối API:', error);
+    throw error; // Đẩy lỗi lên để có thể xử lý ở nơi gọi hàm này
+  }
+};
+export const updateActivity = async (activityId, updatedData) => {
+  try {
+    const response = await axios.put(`${API_URL}/activity/updateActivity/${activityId}`, updatedData);
+    return response.data; // Trả về dữ liệu nhận được từ API
+  } catch (error) {
+    console.error("Có lỗi xảy ra khi cập nhật hoạt động:", error);
+    throw error; // Ném lỗi để xử lý sau
+  }
+};

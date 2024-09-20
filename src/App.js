@@ -13,6 +13,7 @@ import Itinerary from './pages/Itinerary';
 import CreateItinerary from './components/itinerary/CreateItinerary';
 import FlightPage from './pages/FlightPage';
 import DetailItinerary from './components/itinerary/DetailItinerary';
+import UpdateDetailItinerary from './components/itinerary/UpdateDetailItinerary';
 import AttractionList  from './components/explore/AttractionList'
 import NavBar from './components/NavBar';
 import AttractionDetail from './components/explore/AttractionDetail';
@@ -38,6 +39,7 @@ const App = () => {
           <Route path="/create-itinerary" element={<CreateItinerary />} />
           <Route path="/flightPage" element={<FlightPage />} />
           <Route path="/itinerary/:itineraryId" element={<DetailItinerary />} />
+          <Route path="/itinerary/:itineraryId/update" element={<UpdateDetailItinerary />} />
         </Routes>
       </Router>
     </AuthProvider>
