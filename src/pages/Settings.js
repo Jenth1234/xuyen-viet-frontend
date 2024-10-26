@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { getUserSettings, editUserSettings } from '../api/callApi'; // Import đúng hàm
-import NavBar from '../components/NavBar';
+import NavBar from '../components/nav/NavBar';
 
 const Settings = () => {
   const [userSettings, setUserSettings] = useState({

@@ -1,9 +1,17 @@
-import { createActivity } from '../../../api/callApi'; // Import the createActivity function
+import { createActivity } from '../../../api/callApi';
 import React, { useState } from 'react';
-import { useParams } from 'react-router-dom'; // Đảm bảo import useParams
+import { useParams } from 'react-router-dom';
 
-const ActivityModal = ({ onClose, onSave, dayIndex }) => {
+const ActivityModal = ({ onClose, onSave, dayIndex, activitiesState }) => {
+  console.log(dayIndex)
   const { itineraryId } = useParams();
+  
+  // Lấy ngày tương ứng với dayIndex
+  const getDateFromIndex = (index) => {
+    const today = new Date();
+    today.setDate(today.getDate() + index); // Thay đổi số ngày tùy theo dayIndex
+    return today.toISOString().split('T')[0]; // Trả về định dạng YYYY-MM-DD
+  };
 
   const [activity, setActivity] = useState({
     NAME: '',
@@ -24,7 +32,7 @@ const ActivityModal = ({ onClose, onSave, dayIndex }) => {
 
   const formatDateTime = (time) => {
     if (time) {
-      return `${new Date().toISOString().split('T')[0]}T${time}`;
+      return `${getDateFromIndex(dayIndex)}T${time}`;
     }
     return null;
   };
@@ -32,7 +40,7 @@ const ActivityModal = ({ onClose, onSave, dayIndex }) => {
   const handleSave = async () => {
     const newActivity = {
       activity: {
-        NAME:activity.NAME,
+        NAME: activity.NAME,
         LOCATION: activity.LOCATION,
         DESCRIPTION: activity.DESCRIPTION,
         STARTTIME: formatDateTime(activity.STARTTIME),
@@ -55,7 +63,7 @@ const ActivityModal = ({ onClose, onSave, dayIndex }) => {
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
       <div className="bg-white rounded-lg p-6 w-1/2">
-        <h2 className="text-xl font-semibold mb-4">Thêm Hoạt Động</h2>
+        <h2 className="text-xl font-semibold mb-4">Thêm Hoạt Động cho Ngày: {getDateFromIndex(dayIndex)}</h2>
         <div className="mb-4">
           <label className="block mb-2">
             Tên hoạt động:

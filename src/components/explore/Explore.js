@@ -1,13 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import { Input, Spin } from 'antd';
+import { getAllProvincesWithFestivals, getAllProvincesWithByViews, getAllProvincesWithByCultural, getAllProvincesWithByBeaches, getAttractionByName } from '../../api/callApi';
 import AttractionSlider from './AttractionSlider';
-import {
-  getAllProvincesWithFestivals,
-  getAllProvincesWithByViews,
-  getAllProvincesWithByCultural,
-  getAllProvincesWithByBeaches,
-  getAttractionByName,
-} from '../../api/callApi';
-import Search from '../../components/Search';
+
+const { Search } = Input;
 
 const Explore = () => {
   const [festivalsProvinces, setFestivalsProvinces] = useState([]);
@@ -16,6 +12,7 @@ const Explore = () => {
   const [beachesProvinces, setBeachesProvinces] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [searchResults, setSearchResults] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -31,8 +28,10 @@ const Explore = () => {
         setViewsProvinces(viewsResponse.success ? viewsResponse.data : []);
         setCulturalProvinces(culturalResponse.success ? culturalResponse.data : []);
         setBeachesProvinces(beachesResponse.success ? beachesResponse.data : []);
+        setLoading(false);
       } catch (error) {
         console.error('Error fetching provinces data:', error);
+        setLoading(false);
       }
     };
 
@@ -64,17 +63,30 @@ const Explore = () => {
   };
 
   return (
-    <div>
-      <Search searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
+    <div className="p-6 bg-gray-100">
+      <Search
+        placeholder="Tìm kiếm địa điểm"
+        enterButton="Tìm kiếm"
+        size="large"
+        value={searchTerm}
+        onChange={(e) => setSearchTerm(e.target.value)}
+        className="mb-6"
+      />
 
-      {searchTerm ? (
-        <AttractionSlider title="Kết quả tìm kiếm" provinces={searchResults} />
+      {loading ? (
+        <Spin size="large" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh' }} />
       ) : (
         <>
-          <AttractionSlider title="Địa điểm đáng đi trong năm" provinces={filterProvinces(festivalsProvinces)} />
-          <AttractionSlider title="Điểm đến dành cho kỳ nghỉ" provinces={filterProvinces(viewsProvinces)} />
-          <AttractionSlider title="Địa điểm có di sản văn hóa và lịch sử" provinces={filterProvinces(culturalProvinces)} />
-          <AttractionSlider title="Trải nghiệm các lễ hội và sự kiện đặc biệt" provinces={filterProvinces(beachesProvinces)} />
+          {searchTerm ? (
+            <AttractionSlider title="Kết quả tìm kiếm" provinces={searchResults} />
+          ) : (
+            <>
+              <AttractionSlider title="Địa điểm đáng đi trong năm" provinces={filterProvinces(festivalsProvinces)} />
+              <AttractionSlider title="Điểm đến dành cho kỳ nghỉ" provinces={filterProvinces(viewsProvinces)} />
+              <AttractionSlider title="Địa điểm có di sản văn hóa và lịch sử" provinces={filterProvinces(culturalProvinces)} />
+              <AttractionSlider title="Trải nghiệm các lễ hội và sự kiện đặc biệt" provinces={filterProvinces(beachesProvinces)} />
+            </>
+          )}
         </>
       )}
     </div>

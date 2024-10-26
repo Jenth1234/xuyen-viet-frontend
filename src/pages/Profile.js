@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { getUserInfo, editUserInfo } from '../api/callApi';
-import NavBar from '../components/NavBar';
+import NavBar from '../components/nav/NavBar';
 
 const Profile = () => {
   const [userSettings, setUserSettings] = useState({

@@ -83,7 +83,7 @@ const MapPage = () => {
 
       <div className="pt-16 md:pt-20">
         <div className="px-4 md:px-8">
-          <h2 className="text-2xl font-bold mb-6">Trang Bản Đồ</h2>
+          <h2 className="text-2xl font-bold mb-6"></h2>
           <div className="flex flex-col md:flex-row gap-4 mb-6">
             <div className="w-full md:w-3/4">
               <Map onAddProvince={handleSaveProvince} />

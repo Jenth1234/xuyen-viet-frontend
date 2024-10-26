@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { useLocation, useParams } from "react-router-dom";
 import ActivityModal from "./modal/ActivityModal";
 import UpdateActivity from "./modal/UpdateActivityModal";
+import UpdateItineraryModal from "./modal/UpdateItineraryModal"; // Import modal mới
 import { getItinerary, updateActivity } from "../../api/callApi";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {faInfoCircle , faCalendarAlt, faDollarSign, faEdit, faMapMarkerAlt, faGlassCheers, faClock } from "@fortawesome/free-solid-svg-icons";
@@ -21,6 +22,7 @@ const DetailPage = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [currentActivity, setCurrentActivity] = useState(null);
   const [currentDayIndex, setCurrentDayIndex] = useState(null);
+  const [isItineraryEditing, setIsItineraryEditing] = useState(false); // State cho modal chỉnh sửa hành trình
   const [itinerary, setItinerary] = useState({});
   const dayRefs = useRef([]);
   const [startDate, setStartDate] = useState(initialStartDate);
@@ -32,32 +34,33 @@ const DetailPage = () => {
     const fetchData = async () => {
       try {
         const response = await getItinerary(itineraryId);
+        const activitiesData = response.ACTIVITIES || [];
         if (response) {
           setItinerary(response);
           setStartDate(response.START_DATE);
           setEndDate(response.END_DATE);
-          const daysData = response.DAYS || [];
-          const activitiesData = response.ACTIVITIES || [];
-
-          const activitiesMap = activitiesData.reduce((map, activity) => {
-            map[activity._id] = activity;
-            return map;
-          }, {});
-
           const startDateObj = new Date(response.START_DATE);
           const endDateObj = new Date(response.END_DATE);
           const dayCount = Math.ceil((endDateObj - startDateObj) / (1000 * 60 * 60 * 24)) + 1;
-
+  
           setDateArray(Array.from({ length: dayCount }, (_, index) => {
             const currentDate = new Date(startDateObj);
             currentDate.setDate(currentDate.getDate() + index);
             return currentDate.toISOString().split('T')[0];
           }));
-
-          const activitiesByDay = daysData.map(day =>
-            (day.ACTIVITIES || []).map(id => activitiesMap[id] || {})
-          );
-
+  
+          // Khởi tạo mảng hoạt động cho mỗi ngày
+          const activitiesByDay = Array.from({ length: dayCount }, () => []);
+  
+          // Phân loại hoạt động vào ngày tương ứng dựa trên STARTTIME
+          activitiesData.forEach(activity => {
+            const startTime = new Date(activity.STARTTIME);
+            const dayIndex = Math.floor((startTime - startDateObj) / (1000 * 60 * 60 * 24));
+            if (dayIndex >= 0 && dayIndex < dayCount) {
+              activitiesByDay[dayIndex].push(activity);
+            }
+          });
+  
           setActivitiesState(activitiesByDay);
           setDays(dayCount);
           setTotalCost(calculateTotalCost(activitiesByDay));
@@ -68,10 +71,12 @@ const DetailPage = () => {
         console.error("API call error:", error);
       }
     };
-
+  
     fetchData();
   }, [itineraryId]);
+  
 
+  // Tính toán tổng chi phí của tất cả các hoạt động trong hành trình
   const calculateTotalCost = (activitiesByDay) => {
     if (!Array.isArray(activitiesByDay)) return "0";
     const total = activitiesByDay.reduce((total, day) => {
@@ -82,17 +87,22 @@ const DetailPage = () => {
     }, 0);
     return total.toLocaleString();
   };
-
+  // Cuộn đến ngày cụ thể trong danh sách hành trình khi người dùng nhấp vào ngày.
   const handleScrollToDay = (index) => {
     dayRefs.current[index]?.scrollIntoView({ behavior: "smooth" });
   };
-
+  // Mở modal để thêm hoạt động mới cho ngày cụ thể.
   const handleAddActivity = (dayIndex) => {
-    console.log("Opening modal for day:", dayIndex);
     setCurrentDayIndex(dayIndex);
+    console.log("Opening modal for day:", dayIndex);
     setIsModalOpen(true);
-  };
+};
 
+const handleEditItinerary = () => {
+  setIsItineraryEditing(true);
+  setItinerary(itineraryId);
+};
+  // Lưu hoạt động mới được thêm vào danh sách các hoạt động cho ngày cụ thể.
   const handleSaveActivity = (newActivity) => {
     setActivitiesState(prev => {
       const updatedActivities = [...prev];
@@ -106,35 +116,41 @@ const DetailPage = () => {
     setIsModalOpen(false);
   };
   
-
+  
+  // closeModal
   const closeModal = () => setIsModalOpen(false);
-
-  const handleEditActivity = (activity) => {
+ // Mở modal để chỉnh sửa một hoạt động hiện có
+  const handleEditActivity = (activity, dayIndex) => {
     setCurrentActivity(activity);
+    setCurrentDayIndex(dayIndex);
     setIsEditing(true);
   };
 
+  // Cập nhật hoạt động hiện tại với dữ liệu mới
   const handleUpdate = async (updatedData) => {
-    try {
-      const updatedActivity = await updateActivity(currentActivity._id, updatedData);
-      setActivitiesState(prev => {
-        const updatedActivities = [...prev];
-        const activityIndex = updatedActivities[currentDayIndex].findIndex(
-          act => act._id === currentActivity._id
-        );
-        updatedActivities[currentDayIndex][activityIndex] = updatedActivity;
+  try {
+    const updatedActivity = await updateActivity(currentActivity._id, updatedData);
+    setActivitiesState(prev => {
+      const updatedActivities = [...prev];
+      const activityIndex = updatedActivities[currentDayIndex].findIndex(
+        act => act._id === currentActivity._id
+      );
+      if (activityIndex !== -1) {
+        updatedActivities[currentDayIndex][activityIndex] = updatedActivity; // Cập nhật hoạt động
         setTotalCost(calculateTotalCost(updatedActivities)); // Cập nhật tổng chi phí
-        return updatedActivities;
-      });
-      setIsEditing(false);
-    } catch (error) {
-      console.error("Error updating activity:", error);
-    }
-  };
-  console.log(activities.NAME)
+      }
+      return updatedActivities;
+    });
+    setIsEditing(false);
+  } catch (error) {
+    console.error("Error updating activity:", error);
+  }
+};
+
+
   return (
     <div className="max-w-7xl mx-auto mt-24 flex">
-      <aside className="w-1/5 p-6 bg-gray-100 rounded-lg shadow-lg sticky top-20">
+      <aside className="w-1/5 p-6 bg-gray-100 rounded-lg shadow-lg sticky top-20 h-screen overflow-y-scroll mb-5">
         <h2 className="text-xl font-semibold mb-4 flex items-center">
           <FontAwesomeIcon icon={faCalendarAlt} className="mr-2" />
           Tóm tắt hành trình
@@ -151,16 +167,16 @@ const DetailPage = () => {
             </li>
           ))}
         </ul>
-        <div className="mt-6 p-4 bg-gray-200 rounded-lg shadow-md border border-gray-600">
+        <div className="mt-2 p-3 bg-gray-200 rounded-lg shadow-md border mb-4 border-gray-600">
           <h3 className="text-lg font-semibold mb-2 flex items-center">
             <FontAwesomeIcon icon={faDollarSign} className="mr-2" />
-            Tổng chi phí:
+         <p className="text-xl font-bold">{totalCost} VND</p>
           </h3>
-          <p className="text-xl font-bold">{totalCost} VND</p>
+        
         </div>
       </aside>
 
-      <div className="relative w-3/4">
+      <div className="relative w-3/4  ">
         <div className="relative w-full h-96">
           <img src={bgItinerary} alt="Nền" className="w-full h-80 object-cover" />
           <div className="absolute bottom-0 left-1/2 w-2/3 bg-white bg-opacity-90 p-6 rounded-lg shadow-lg transform -translate-x-1/2 border border-gray-300">
@@ -175,7 +191,7 @@ const DetailPage = () => {
               <strong>Ngày kết thúc:</strong> {endDate ? new Date(endDate).toLocaleDateString() : "Chưa xác định"}
             </p>
             <button
-              onClick={() => console.log("Chỉnh sửa hành trình")}
+                 onClick={handleEditItinerary} // Gọi hàm mở modal khi nhấn nút
               className="absolute bottom-4 right-4 py-2 px-2 bg-gray-600 text-white rounded-lg shadow-md flex items-center"
             >
               <FontAwesomeIcon icon={faEdit} className="mr-2" />
@@ -194,7 +210,7 @@ const DetailPage = () => {
             </h2>
          
             <div className="activities w-3/4">
-  <h3 className="text-xl font-medium mb-2">Hoạt động:</h3>
+  {/* <h3 className="text-xl font-medium mb-2">Hoạt động:</h3> */}
   {activitiesState[dayIndex] && activitiesState[dayIndex].length > 0 ? (
     <div className="space-y-4">
       {activitiesState[dayIndex].map((activity, idx) => (
@@ -247,7 +263,7 @@ const DetailPage = () => {
       ))}
     </div>
   ) : (
-    <p>Chưa có hoạt động nào cho ngày này.</p>
+    <p></p>
   )}
   <button
     onClick={() => handleAddActivity(dayIndex)}
@@ -263,6 +279,15 @@ const DetailPage = () => {
         ))}
       </div>
 
+      {isItineraryEditing && (
+        <UpdateItineraryModal
+          isOpen={isItineraryEditing}
+          onClose={() => setIsItineraryEditing(false)}
+          itinerary={itinerary} // Truyền thông tin hành trình vào modal
+          itineraryId={itineraryId} // Truyền ID vào modal
+        />
+      )}
+
       {isModalOpen && (
         <ActivityModal 
         onClose={closeModal} 
@@ -271,11 +296,13 @@ const DetailPage = () => {
          />
       )}
       {isEditing && (
-        <UpdateActivity
-          activity={currentActivity}
-          onClose={() => setIsEditing(false)}
-          onUpdate={handleUpdate}
-        />
+         <UpdateActivity
+         isOpen={isEditing}
+         onClose={() => setIsEditing(false)}
+         onUpdate={handleUpdate}
+         activity={currentActivity}
+         dayIndex={currentDayIndex}
+       />
       )}
     </div>
   );

@@ -1,5 +1,5 @@
 import React from 'react';
-import NavBar from '../components/NavBar'; // Đảm bảo đường dẫn đúng
+import NavBar from '../components/nav/NavBar'; // Đảm bảo đường dẫn đúng
 import FlightOffer from '../components/FlightOffer'
 
 const ExplorePage = () => {

@@ -1,5 +1,5 @@
   import axios from 'axios';
-import Itinerary from '../pages/Itinerary';
+
 
   // URL của API backend
   const API_URL = 'http://localhost:3600';
@@ -540,7 +540,7 @@ export const getItinerary = async (itineraryId) => {
 export const getActivity = async (activityId) => {
   try {
   
-    const response = await fetch(`${API_URL}/itinerary/getActivityById/${activityId}`, {
+    const response = await fetch(`${API_URL}/activity/getActivityById/${activityId}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -591,3 +591,30 @@ export const updateActivity = async (activityId, updatedData) => {
     throw error; // Ném lỗi để xử lý sau
   }
 };
+
+export const updateItinerary = async (itineraryId, updatedData) => {
+  try {
+    const token = localStorage.getItem('accessToken');
+    console.log(token)
+    const response = await fetch(`${API_URL}/itinerary/${itineraryId}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify(updatedData),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(`Error: ${response.status} ${response.statusText} - ${errorData.message || ''}`);
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Failed to update itinerary:', error);
+    throw error;
+  }
+};
+

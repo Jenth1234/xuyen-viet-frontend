@@ -106,7 +106,7 @@ const Map = () => {
   return (
     <>
     
-     <MapContainer className="map-container" center={[16, 109]} zoom={6} style={{ height: 'calc(100vh - 60px)', width: '100%' }}>
+     <MapContainer className="map-container z-20" center={[16, 109]} zoom={6} style={{ height: 'calc(100vh - 60px)', width: '100%' }}>
   <TileLayer
     url={`https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token=${accessToken}`}
     id="mapbox/streets-v11"

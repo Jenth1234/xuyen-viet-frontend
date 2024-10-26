@@ -1,39 +1,81 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext } from 'react';
 
 const AuthContext = createContext();
 
-export const useAuth = () => useContext(AuthContext);
+export class AuthProvider extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      isLoggedIn: false,
+      token: null,
+      userInfo: null,
+    };
+  }
 
-export const AuthProvider = ({ children }) => {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [userId, setUserId] = useState(null);
+  componentDidMount() {
+    const storedToken = localStorage.getItem('token');
+    const storedUserInfo = localStorage.getItem('userInfo');
 
-  useEffect(() => {
-    const token = localStorage.getItem('accessToken');
-    const storedUserId = localStorage.getItem('userId');
-    setIsAuthenticated(!!token);
-    if (storedUserId) {
-      setUserId(storedUserId);
+    if (storedToken) {
+      this.setState({
+        isLoggedIn: true,
+        token: storedToken,
+        userInfo: JSON.parse(storedUserInfo),
+      });
+
+
+
     }
-  }, []);
+  }
 
-  const login = (token, id) => {
-    localStorage.setItem('accessToken', token);
-    localStorage.setItem('userId', id);
-    setIsAuthenticated(true);
-    setUserId(id);
+  login = (token) => {
+    this.setState({
+      isLoggedIn: true,
+      token: token,
+
+    });
+    localStorage.setItem('token', token);
+
+
+
+
   };
 
-  const logout = () => {
-    localStorage.removeItem('accessToken');
-    localStorage.removeItem('userId');
-    setIsAuthenticated(false);
-    setUserId(null);
+  logout = () => {
+    this.setState({
+      isLoggedIn: false,
+      token: null,
+
+    });
+    localStorage.removeItem('token');
   };
 
-  return (
-    <AuthContext.Provider value={{ isAuthenticated, userId, login, logout }}>
-      {children}
-    </AuthContext.Provider>
-  );
+  isTokenExists = () => {
+    const storedToken = localStorage.getItem('token');
+
+    return storedToken !== null; 
+  };
+
+  render() {
+    return (
+      <AuthContext.Provider 
+        value={{
+          ...this.state, 
+          login: this.login, 
+          logout: this.logout, 
+          isTokenExists: this.isTokenExists // Thêm hàm kiểm tra token vào provider
+        }}
+      >
+        {this.props.children}
+      </AuthContext.Provider>
+    );
+  }
+}
+
+export const useAuth = () => {
+  const context = React.useContext(AuthContext);
+  if (!context) {
+    throw new Error("useAuth must be used within an AuthProvider");
+  }
+  return context;
 };

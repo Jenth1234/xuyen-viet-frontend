@@ -3,40 +3,43 @@ import { loginUser } from '../api/callApi';
 import { useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
+import { Button, Input, Form, Alert, Typography, notification } from 'antd';
+
+const { Title, Text } = Typography;
 
 const Login = () => {
   const [USERNAME, setUsername] = useState('');
   const [PASSWORD, setPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
-  const handleLogin = async (e) => {
-    e.preventDefault();
+  const handleLogin = async (values) => {
     try {
-      const result = await loginUser(USERNAME, PASSWORD);
-      console.log('Login successful:', result);
-      if (result.metadata && result.metadata.accessToken) {
-        localStorage.setItem('accessToken', result.metadata.accessToken);
-        const savedToken = localStorage.getItem('accessToken');
-        console.log('Token saved:', savedToken);
+      const result = await loginUser(values.username, values.password);
+      if (result.data && result.data.accessToken) {
+        localStorage.setItem('token', result.data.accessToken);
+        const savedToken = localStorage.getItem('token');
 
-        if (savedToken === result.metadata.accessToken) {
-          console.log('Token saved successfully');
-          alert('Token saved successfully');
+        if (savedToken === result.data.accessToken) {
+          notification.success({
+            message: 'Đăng nhập thành công',
+            description: 'Bạn đã đăng nhập thành công!',
+            placement: 'topRight',
+          });
+
+          navigate('/');
         } else {
-          console.error('Failed to save token');
-          alert('Failed to save token');
+          notification.error({
+            message: 'Lỗi',
+            description: 'Không thể lưu token vào localStorage!',
+            placement: 'topRight',
+          });
         }
-
-        navigate('/');
       } else {
-        console.error('Access token is missing in the response:', result);
-        setError('Failed to retrieve access token');
+        setError('Không lấy được token');
       }
     } catch (error) {
-      console.error('Error during login:', error);
-      setError('Invalid username or password');
+      setError('Sai tên đăng nhập hoặc mật khẩu');
     }
   };
 
@@ -45,60 +48,52 @@ const Login = () => {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
-      <h1 className="text-4xl font-bold mb-8">Hành Trình Xuyên Việt</h1>
-      <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
-        <h1 className="text-3xl font-bold text-center mb-8">Login</h1>
-        <form onSubmit={handleLogin} className="space-y-6">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Username:
-            </label>
-            <input
-              type="text"
+    <div className="flex flex-col items-center justify-center min-h-screen" style={{ backgroundColor: '#CAE7C3' }}>
+      <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-md">
+        <Title level={2} className="text-center mb-8" style={{ color: '#FFF7ED' }}>
+          Đăng Nhập
+        </Title>
+        {error && <Alert message={error} type="error" showIcon className="mb-4" />}
+        <Form onFinish={handleLogin} layout="vertical">
+          <Form.Item
+            label="Tên đăng nhập"
+            name="username"
+            rules={[{ required: true, message: 'Vui lòng nhập tên đăng nhập!' }]}
+          >
+            <Input
               value={USERNAME}
               onChange={(e) => setUsername(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Enter your username"
+              placeholder="Nhập tên đăng nhập của bạn"
+              className="w-full"
             />
-          </div>
-          <div className="relative">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Password:
-            </label>
-            <input
-              type={showPassword ? 'text' : 'password'}
+          </Form.Item>
+
+          <Form.Item
+            label="Mật khẩu"
+            name="password"
+            rules={[{ required: true, message: 'Vui lòng nhập mật khẩu!' }]}
+          >
+            <Input.Password
               value={PASSWORD}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-4   py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Enter your password"
+              placeholder="Nhập mật khẩu của bạn"
+              className="w-full"
+              iconRender={(visible) =>
+                visible ? <FontAwesomeIcon icon={faEyeSlash} /> : <FontAwesomeIcon icon={faEye} />
+              }
             />
-            <span
-              className="absolute inset-y-0 right-0 pr-3 flex items-center cursor-pointer"
-              onClick={() => setShowPassword(!showPassword)}
-            >
-              <FontAwesomeIcon
-                icon={showPassword ? faEyeSlash : faEye}
-                className="text-gray-500"
-              />
-            </span>
-          </div>
-          <button
-            type="submit"
-            className="w-full bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-          >
-            Login
-          </button>
-        </form>
-        {error && <p className="text-red-500 text-center mt-4">{error}</p>}
+          </Form.Item>
+
+          <Button type="primary" htmlType="submit" className="w-full bg-gradient-to-r from-green-400 to-blue-500 hover:from-blue-500 hover:to-green-400 focus:outline-none focus:ring-2 focus:ring-blue-500 text-white font-semibold py-2 px-4 rounded-md">
+            Đăng nhập
+          </Button>
+        </Form>
+
         <div className="mt-4 text-center">
-          <p className="text-sm">Don't have an account?</p>
-          <button
-            onClick={goToRegister}
-            className="mt-2 text-blue-500 hover:text-blue-700 focus:outline-none"
-          >
-            Register here
-          </button>
+          <Text>Chưa có tài khoản?</Text>
+          <Button type="link" onClick={goToRegister} className="mt-2 text-blue-600 hover:text-blue-800">
+            Đăng ký ngay
+          </Button>
         </div>
       </div>
     </div>

@@ -1,17 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { getProvince } from '../../api/callApi';
 import geojsonData from '../province/diaphantinh.json';
-import Modal from '../Modal';
-import NotModal from '../NotModal';
-import ProvinceList from './ProvinceList';
+import { Modal, Button, Progress, Pagination } from 'antd';
 
 const Statistics = () => {
   const [visitedCount, setVisitedCount] = useState(0);
-  const [visitedProvinces, setVisitedProvinces] = useState([]); // Đảm bảo khai báo setVisitedProvinces
+  const [visitedProvinces, setVisitedProvinces] = useState([]);
   const [notVisitedProvinces, setNotVisitedProvinces] = useState([]);
   const [isVisitedModalOpen, setIsVisitedModalOpen] = useState(false);
   const [isNotVisitedModalOpen, setIsNotVisitedModalOpen] = useState(false);
-  const [showProvinceList, setShowProvinceList] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 20;
   const totalProvinces = 63;
@@ -31,7 +28,7 @@ const Statistics = () => {
           const uniqueNotVisitedProvinces = allProvinces.filter(province => !uniqueVisitedProvinces.includes(province));
 
           setVisitedCount(uniqueVisitedProvinces.length);
-          setVisitedProvinces(uniqueVisitedProvinces); // Đảm bảo gọi đúng hàm
+          setVisitedProvinces(uniqueVisitedProvinces);
           setNotVisitedProvinces(uniqueNotVisitedProvinces);
         } else {
           console.error('Data.visitedProvinces is not an array:', data);
@@ -57,87 +54,70 @@ const Statistics = () => {
     );
   };
 
-  const totalPages = (provinces) => {
-    return Math.ceil(provinces.length / itemsPerPage);
-  };
-
   return (
-    <div className={`p-4 ${isVisitedModalOpen || isNotVisitedModalOpen ? 'map-hidden' : ''}`}>
+    <div className="p-4">
       <h1 className="text-2xl font-bold mb-4">Thống kê</h1>
       <div className="mb-4">
         <p>Bạn đã thăm <strong>{visitedCount}</strong> trong số <strong>{totalProvinces}</strong> tỉnh thành.</p>
         <p>Điều đó có nghĩa là bạn đã thăm <strong>{visitedPercentage}%</strong> Việt Nam.</p>
       </div>
-      <div className="relative pt-1 mb-4">
-        <div className="overflow-hidden h-10 mb-4 text-xs flex rounded bg-gray-200">
-          <div
-            style={{ width: `${visitedPercentage}%` }}
-            className="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-blue-600"
-          >
-            <span className="text-center font-semibold">{visitedPercentage}%</span>
-          </div>
-        </div>
-      </div>
+
+      <Progress percent={visitedPercentage} status="active" />
+
       <div className="grid grid-cols-2 gap-4">
-        <div className="p-4 border rounded-lg shadow cursor-pointer" onClick={() => setIsVisitedModalOpen(true)}>
-          <h2 className="text-xl font-semibold mb-2">Số tỉnh thành đã thăm</h2>
-          <p className="text-lg font-bold">{visitedCount}</p>
-        </div>
-        <div className="p-4 border rounded-lg shadow cursor-pointer" onClick={() => setIsNotVisitedModalOpen(true)}>
-          <h2 className="text-xl font-semibold mb-2">Số tỉnh thành chưa thăm</h2>
-          <p className="text-lg font-bold">{totalProvinces - visitedCount}</p>
-        </div>
-        <button
-          className="p-4 border rounded-lg shadow cursor-pointer col-span-2"
-          onClick={() => setShowProvinceList(!showProvinceList)}
-        >
-          <h2 className="text-xl font-semibold mb-2">Danh Sách Tỉnh Thành</h2>
-        </button>
+        <Button type="primary" onClick={() => setIsVisitedModalOpen(true)}>
+        đã đến : {visitedCount}
+        </Button>
+        <Button type="default" onClick={() => setIsNotVisitedModalOpen(true)}>
+          chưa đến: {totalProvinces - visitedCount}
+        </Button>
       </div>
 
-      <Modal isOpen={isVisitedModalOpen} onClose={() => setIsVisitedModalOpen(false)} title="Tỉnh thành đã thăm">
+      {/* Modal for visited provinces */}
+      <Modal
+        title="Tỉnh thành đã thăm"
+        visible={isVisitedModalOpen}
+        onCancel={() => setIsVisitedModalOpen(false)}
+        footer={null}
+      >
         <div className="grid grid-cols-2 gap-4">
           {paginatedProvinces(visitedProvinces).map((province, index) => (
-            <button key={index} className="p-2 border rounded bg-gray-200 hover:bg-gray-300 focus:outline-none">
+            <Button key={index} className="p-2">
               {province}
-            </button>
+            </Button>
           ))}
         </div>
-        <div className="flex justify-center mt-4">
-          {Array.from({ length: totalPages(visitedProvinces) }, (_, i) => (
-            <button
-              key={i}
-              className={`mx-1 px-2 py-1 border rounded ${currentPage === i + 1 ? 'bg-blue-600 text-white' : 'bg-gray-200'}`}
-              onClick={() => handlePageChange(i + 1)}
-            >
-              {i + 1}
-            </button>
-          ))}
-        </div>
+        <Pagination
+          current={currentPage}
+          total={visitedProvinces.length}
+          pageSize={itemsPerPage}
+          onChange={handlePageChange}
+          className="mt-4"
+        />
       </Modal>
 
-      <NotModal isOpen={isNotVisitedModalOpen} onClose={() => setIsNotVisitedModalOpen(false)} title="Tỉnh thành chưa thăm">
+      {/* Modal for not visited provinces */}
+      <Modal
+        title="Tỉnh thành chưa thăm"
+        visible={isNotVisitedModalOpen}
+        onCancel={() => setIsNotVisitedModalOpen(false)}
+        footer={null}
+      >
         <div className="grid grid-cols-2 gap-4">
           {paginatedProvinces(notVisitedProvinces).map((province, index) => (
-            <button key={index} className="p-2 border rounded bg-gray-200 hover:bg-gray-300 focus:outline-none">
+            <Button key={index} className="p-2">
               {province}
-            </button>
+            </Button>
           ))}
         </div>
-        <div className="flex justify-center mt-4">
-          {Array.from({ length: totalPages(notVisitedProvinces) }, (_, i) => (
-            <button
-              key={i}
-              className={`mx-1 px-2 py-1 border rounded ${currentPage === i + 1 ? 'bg-blue-600 text-white' : 'bg-gray-200'}`}
-              onClick={() => handlePageChange(i + 1)}
-            >
-              {i + 1}
-            </button>
-          ))}
-        </div>
-      </NotModal>
-
-      {showProvinceList && <ProvinceList />}
+        <Pagination
+          current={currentPage}
+          total={notVisitedProvinces.length}
+          pageSize={itemsPerPage}
+          onChange={handlePageChange}
+          className="mt-4"
+        />
+      </Modal>
     </div>
   );
 };

@@ -28,7 +28,7 @@ const ImageSlider = () => {
     fetchData();
   }, [name, typeField, field]);
 
-  // Điều hướng slider
+ 
   const nextSlide = () => {
     if (attraction?.IMAGES?.NORMAL) {
       setCurrentIndex((prevIndex) =>

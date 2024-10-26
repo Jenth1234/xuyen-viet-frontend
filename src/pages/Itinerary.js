@@ -7,7 +7,7 @@ import {
   faCheckCircle,
   faShare,
 } from "@fortawesome/free-solid-svg-icons";
-import NavBar from "../components/NavBar";
+import NavBar from "../components/nav/NavBar";
 import Footer from "../components/Footer";
 import bgItinerary from "../style/img/lienkhuong2.jpg";
 import MyItinerary from "../components/itinerary/MyItinerary";
