@@ -57,17 +57,17 @@ const BannerTimeVote = () => {
               <p>Ngày</p>
             </div>
             <div className="text-2xl font-bold">:</div>
-            <div className="bg-white text-blue-900 p-4 rounded">
+            <div className="bg-white  p-4 rounded">
               <p className="text-2xl font-bold">{timeRemaining.hours}</p>
               <p>Giờ</p>
             </div>
             <div className="text-2xl font-bold">:</div>
-            <div className="bg-white text-blue-900 p-4 rounded">
+            <div className="bg-white  p-4 rounded">
               <p className="text-2xl font-bold">{timeRemaining.minutes}</p>
               <p>Phút</p>
             </div>
             <div className="text-2xl font-bold">:</div>
-            <div className="bg-white text-blue-900 p-4 rounded">
+            <div className="bg-white  p-4 rounded">
               <p className="text-2xl font-bold">{timeRemaining.seconds}</p>
               <p>Giây</p>
             </div>

@@ -1,0 +1,97 @@
+{
+    "type": "flight-offer", // Loại dữ liệu, ở đây là thông tin về chuyến bay.
+    "id": "113", // ID duy nhất của chuyến bay.
+    "source": "GDS", // Nguồn thông tin chuyến bay, ví dụ: "GDS" (Global Distribution System).
+    "instantTicketingRequired": false, // Cho biết liệu việc đặt vé có yêu cầu ngay lập tức hay không.
+    "nonHomogeneous": false, // Thông tin về việc chuyến bay không đồng nhất, thường áp dụng cho các chuyến bay kết hợp nhiều nhà vận chuyển.
+    "oneWay": false, // Cho biết liệu chuyến bay là một chiều hay không (true nếu là một chiều).
+    "isUpsellOffer": false, // Cho biết liệu đây có phải là một đề nghị nâng cấp hay không.
+    "lastTicketingDate": "2024-11-02", // Ngày cuối cùng để đặt vé cho chuyến bay này.
+    "lastTicketingDateTime": "2024-11-02", // Thời gian cuối cùng để đặt vé cho chuyến bay này.
+    "numberOfBookableSeats": 9, // Số ghế có thể đặt còn lại cho chuyến bay này.
+    "itineraries": [ // Danh sách hành trình cho chuyến bay.
+        {
+            "duration": "PT2H15M", // Thời gian bay (ISO 8601 duration).
+            "segments": [ // Danh sách các đoạn bay trong hành trình.
+                {
+                    "departure": { // Thông tin về chuyến bay khởi hành.
+                        "iataCode": "HAN", // Mã sân bay khởi hành (IATA).
+                        "terminal": "1", // Nhà ga khởi hành.
+                        "at": "2024-11-02T23:00:00" // Thời gian khởi hành (ISO 8601).
+                    },
+                    "arrival": { // Thông tin về chuyến bay đến.
+                        "iataCode": "SGN", // Mã sân bay đến (IATA).
+                        "terminal": "1", // Nhà ga đến.
+                        "at": "2024-11-03T01:15:00" // Thời gian đến (ISO 8601).
+                    },
+                    "carrierCode": "VN", // Mã hãng hàng không (IATA).
+                    "number": "223", // Số hiệu chuyến bay.
+                    "aircraft": {
+                        "code": "321" // Mã máy bay (như Airbus A321).
+                    },
+                    "operating": {
+                        "carrierCode": "VN" // Mã hãng vận hành chuyến bay.
+                    },
+                    "duration": "PT2H15M", // Thời gian bay cho đoạn này.
+                    "id": "165", // ID cho đoạn bay.
+                    "numberOfStops": 0, // Số điểm dừng trong chuyến bay (0 cho chuyến bay thẳng).
+                    "blacklistedInEU": false // Thông tin về việc hãng có bị cấm bay vào EU hay không.
+                }
+            ]
+        }
+    ],
+    "price": { // Thông tin về giá vé.
+        "currency": "EUR", // Đơn vị tiền tệ (EUR - Euro).
+        "total": "111.47", // Tổng giá vé.
+        "base": "84.00", // Giá cơ bản chưa bao gồm các loại phí.
+        "fees": [ // Các loại phí bổ sung.
+            {
+                "amount": "0.00", // Số tiền phí nhà cung cấp.
+                "type": "SUPPLIER" // Loại phí (nhà cung cấp).
+            },
+            {
+                "amount": "0.00", // Số tiền phí đặt vé.
+                "type": "TICKETING" // Loại phí (đặt vé).
+            }
+        ],
+        "grandTotal": "111.47", // Tổng cộng (bao gồm tất cả các loại phí).
+        "additionalServices": [ // Các dịch vụ bổ sung có sẵn.
+            {
+                "amount": "11.82", // Chi phí cho dịch vụ (kiểm tra hành lý).
+                "type": "CHECKED_BAGS" // Loại dịch vụ (hành lý ký gửi).
+            }
+        ]
+    },
+    "pricingOptions": { // Tùy chọn giá vé.
+        "fareType": [ // Loại giá vé.
+            "PUBLISHED" // Giá vé được công bố.
+        ],
+        "includedCheckedBagsOnly": true // Có bao gồm hành lý ký gửi hay không.
+    },
+    "validatingAirlineCodes": [ // Mã các hãng hàng không xác thực cho chuyến bay.
+        "VN" // Mã hãng hàng không.
+    ],
+    "travelerPricings": [ // Thông tin giá vé cho từng loại hành khách.
+        {
+            "travelerId": "1", // ID hành khách.
+            "fareOption": "STANDARD", // Tùy chọn giá vé.
+            "travelerType": "ADULT", // Loại hành khách (người lớn).
+            "price": { // Thông tin về giá vé của hành khách.
+                "currency": "EUR", // Đơn vị tiền tệ (EUR - Euro).
+                "total": "111.47", // Tổng giá vé.
+                "base": "84.00" // Giá cơ bản.
+            },
+            "fareDetailsBySegment": [ // Thông tin chi tiết về giá theo từng đoạn bay.
+                {
+                    "segmentId": "165", // ID đoạn bay.
+                    "cabin": "ECONOMY", // Loại ghế (kinh tế).
+                    "fareBasis": "EVN", // Cơ sở giá vé.
+                    "class": "E", // Phân loại giá vé.
+                    "includedCheckedBags": {
+                        "quantity": 1 // Số lượng hành lý ký gửi bao gồm.
+                    }
+                }
+            ]
+        }
+    ]
+}

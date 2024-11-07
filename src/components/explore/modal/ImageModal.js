@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom';
 
 const ImageModal = ({ isOpen, onRequestClose, imageUrl }) => {
   if (!isOpen) return null;
-
+console.log("111")
   return ReactDOM.createPortal(
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
       <div className="relative bg-white p-4 rounded-lg max-w-lg mx-auto">

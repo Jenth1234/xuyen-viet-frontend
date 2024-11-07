@@ -8,10 +8,16 @@ import Settings from './pages/Settings';
 import Profile from './pages/Profile';
 import Login from './pages/Login';
 import Register from './pages/Register';
-import ExplorePage from './pages/ExplorePage'; // Không sử dụng trong route
+import ExplorePage from './pages/ExplorePage'; 
 import Itinerary from './pages/Itinerary';
 import CreateItinerary from './components/itinerary/CreateItinerary';
+
 import FlightPage from './pages/FlightPage';
+import FlightList from './components/Flight/FightList'
+import BookingFlight from './components/Flight/BookingFlight';
+import ReviewBooking from './components/Flight/ReviewBooking';
+
+
 import DetailItinerary from './components/itinerary/DetailItinerary';
 import UpdateDetailItinerary from './components/itinerary/UpdateDetailItinerary';
 import AttractionList from './components/explore/AttractionList';
@@ -21,12 +27,14 @@ import ExploreAll from './pages/ExpoloreAll'; // Đảm bảo import đúng
 import Vote from './pages/Vote'; // Đảm bảo import đúng
 import '@fortawesome/fontawesome-free/css/all.min.css';
 
+
 const App = () => {
   return (
     <AuthProvider>
       <Router basename="/xuyen-viet-frontend">
-        <NavBar />
-        <Routes>
+        <NavBar className="" />
+        <div className="container mt-20 mx-auto p-4"> 
+            <Routes>
           <Route path="/" element={<Navigate to="/home" />} />
           <Route path="/home" element={<Home />} />
           <Route path="/mapPage" element={<PrivateRoute element={<MapPage />} />} />
@@ -43,10 +51,17 @@ const App = () => {
           <Route path="/attraction/:provinceName/:type/:provinceNameSub" element={<AttractionDetail />} />
           <Route path="/itinerary" element={<Itinerary />} />
           <Route path="/create-itinerary" element={<CreateItinerary />} />
-          <Route path="/flightPage" element={<PrivateRoute element={<FlightPage />} />} />
+
+          <Route path="/flight" element={<PrivateRoute element={<FlightPage />} />} />
+          <Route path="/flight-list" element={<PrivateRoute element={<FlightList />} />} />
+          <Route path="/booking-flight" element={<PrivateRoute element={<BookingFlight />} />} />
+          <Route path="/review-booking-flight" element={<PrivateRoute element={<ReviewBooking />} />} />
+
           <Route path="/itinerary/:itineraryId" element={<PrivateRoute element={<DetailItinerary />} />} />
           <Route path="/itinerary/:itineraryId/update" element={<PrivateRoute element={<UpdateDetailItinerary />} />} />
         </Routes>
+        </div>
+      
       </Router>
     </AuthProvider>
   );

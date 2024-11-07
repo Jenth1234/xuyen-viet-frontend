@@ -5,6 +5,7 @@ import ImageModal from "./modal/ImageModal";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEye } from "@fortawesome/free-solid-svg-icons";
 
+import PanoramaViewer from "./PanoramaViewer";
 const AttractionList = () => {
   const { provinceName } = useParams();
   const [province, setProvince] = useState({});
@@ -18,7 +19,7 @@ const AttractionList = () => {
     const fetchData = async () => {
       try {
         const response = await getAttractionByName(provinceName);
-        console.log(response)
+ 
         if (response.data && response.data.length > 0) {
           setProvince(response.data[0]);
         } 
@@ -48,6 +49,7 @@ const AttractionList = () => {
   const openPanorama = (image) => {
     setPanoramaImage(image);
     setIsPanoramaOpen(true);
+    console.log(image)
   };
 
   const closePanorama = () => {
@@ -61,20 +63,22 @@ const AttractionList = () => {
 
   return (
     <>
-      <h1 className="text-4xl font-bold mb-4">{province.NAME || "Tên tỉnh"}</h1>
+     
       <img
         src={province.BACKGROUND || "default-background.jpg"}
         alt={`${province.NAME} background`}
-        className="w-full h-100 object-cover mb-8"
+        className="w-full h-96 object-cover mb-8 mt-10"
       />
-
+ 
       <div className=" mx-20 p-2">
-        <section className="mb-12">
-          <h2 className="text-3xl font-bold mb-4">Mô Tả</h2>
-          <p className="text-gray-700">{province.DESCRIPTION || "Chưa có mô tả."}</p>
-        </section>
+       
 
         <section className="mb-12">
+          <div className="mb-10">
+             <h1 className="text-4xl font-bold mb-4">{province.NAME || "Tên tỉnh"}</h1>
+        <p className="text-gray-700">{province.DESCRIPTION || "Chưa có mô tả."}</p>
+          </div>
+       
           <h2 className="text-3xl font-bold mb-4">Bãi Biển</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
             {province.BEACHES && province.BEACHES.length > 0 ? (
@@ -281,23 +285,31 @@ const AttractionList = () => {
       </div>
       </div>
 
-      {modalIsOpen && (
+      {/* {modalIsOpen && (
         <ImageModal isOpen={modalIsOpen} onClose={closeModal} image={modalImage} title={modalTitle} />
-      )}
+      )} */}
 
-      {isPanoramaOpen && (
+      {/* {isPanoramaOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-75">
           <div>toàn cảnh</div>
           <button
             
-            className="absolute top-4 right-4 text-white text-2xl"
+            className="oj"
             onClick={closePanorama}
           >
             &times;
           </button>
           <img src={panoramaImage} alt="Panorama" className="max-w-full max-h-full" />
         </div>
-      )}
+      )} */}
+
+{isPanoramaOpen && (
+  <PanoramaViewer
+  
+    image={panoramaImage}
+    onClose={closePanorama}
+  />
+)}
     </>
   );
 };

@@ -92,7 +92,7 @@ const Navbar = () => {
             </Button>
             <Button
               icon={<CarOutlined />}
-              onClick={() => handleNavigation('/flightPage')}
+              onClick={() => handleNavigation('/flight')}
               type="link"
               className="text-gray-700 hover:text-blue-500 transition duration-200"
             >

@@ -1,0 +1,23 @@
+{
+"airports": [
+  { "code": "SGN", "name": "Sân bay Quốc tế Tân Sơn Nhất", "province": "Hồ Chí Minh" },
+  { "code": "HAN", "name": "Sân bay Quốc tế Nội Bài", "province": "Hà Nội" },
+  { "code": "DAD", "name": "Sân bay Quốc tế Đà Nẵng", "province": "Đà Nẵng" },
+  { "code": "HUI", "name": "Sân bay Quốc tế Phú Bài", "province": "Thừa Thiên Huế" },
+  { "code": "UIH", "name": "Sân bay Quốc tế Phú Quốc", "province": "Kiên Giang" },
+  { "code": "CXR", "name": "Sân bay Quốc tế Cam Ranh", "province": "Khánh Hòa" },
+  { "code": "VCA", "name": "Sân bay Cần Thơ", "province": "Cần Thơ" },
+  { "code": "DIN", "name": "Sân bay Quốc tế Đồng Hới", "province": "Quảng Bình" }
+],
+
+    "airlines": [
+      { "code": "VN", "name": "Vietnam Airlines", "logo": "https://res.cloudinary.com/dbdl1bznw/image/upload/v1730174696/logVietnamAriline_pnuwcv.png" },
+      { "code": "BL", "name": "Bamboo Airways" },
+      { "code": "QH", "name": "VietJet Air" },
+      { "code": "HH", "name": "Hai Au Aviation" },
+      { "code": "VJ", "name": "VietJet Air" }
+
+    ]
+
+
+}
