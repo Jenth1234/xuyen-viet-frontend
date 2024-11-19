@@ -1,5 +1,5 @@
 import apiClient from './apiClient';
-
+import socketIOClient from 'socket.io-client';
 export const getShareableItems = async () => {
   try {
     const response = await apiClient.get('/itinerary/shareable');
@@ -28,36 +28,3 @@ export const getNotifications = async () => {
   }
 };
 
-export const submitItineraryReview = async (reviewData) => {
-  const token = localStorage.getItem('token');
-  
-  try {
-    const response = await apiClient.post('/itinerary/review', reviewData, {
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-      }
-    });
-    return response.data;
-  } catch (error) {
-    console.error("Error submitting review:", error);
-    throw error;
-  }
-};
-
-export const sendItineraryNotification = async (notificationData) => {
-  const token = localStorage.getItem('token');
-  
-  try {
-    const response = await apiClient.post('/itinerary/notification', notificationData, {
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-      }
-    });
-    return response.data;
-  } catch (error) {
-    console.error("Error sending notification:", error);
-    throw error;
-  }
-};
