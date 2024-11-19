@@ -1,22 +1,30 @@
 {
   "files": {
-    "main.css": "/xuyen-viet-frontend/static/css/main.366ab646.css",
-    "main.js": "/xuyen-viet-frontend/static/js/main.849fba38.js",
-    "static/js/453.f0cb9295.chunk.js": "/xuyen-viet-frontend/static/js/453.f0cb9295.chunk.js",
+    "main.css": "/xuyen-viet-frontend/static/css/main.be820078.css",
+    "main.js": "/xuyen-viet-frontend/static/js/main.26b9a540.js",
+    "static/js/453.5fd139db.chunk.js": "/xuyen-viet-frontend/static/js/453.5fd139db.chunk.js",
+    "static/media/bg-vote.png": "/xuyen-viet-frontend/static/media/bg-vote.536513a90939d0ddb7a3.png",
+    "static/media/fa-solid-900.ttf": "/xuyen-viet-frontend/static/media/fa-solid-900.07ed6d5fa32c1d54af0f.ttf",
+    "static/media/fa-brands-400.ttf": "/xuyen-viet-frontend/static/media/fa-brands-400.0ff70dcbf135d859ebf3.ttf",
     "static/media/logodd.png": "/xuyen-viet-frontend/static/media/logodd.310dd4880dae124518dc.png",
+    "static/media/fa-solid-900.woff2": "/xuyen-viet-frontend/static/media/fa-solid-900.93f719f4d62bfa3e748c.woff2",
+    "static/media/fa-brands-400.woff2": "/xuyen-viet-frontend/static/media/fa-brands-400.bb8d5a145e22822103fb.woff2",
+    "static/media/fa-regular-400.ttf": "/xuyen-viet-frontend/static/media/fa-regular-400.17a6e1aebccdbaa39e78.ttf",
+    "static/media/fa-regular-400.woff2": "/xuyen-viet-frontend/static/media/fa-regular-400.bc3722686635b5f86132.woff2",
     "static/media/lienkhuong2.jpg": "/xuyen-viet-frontend/static/media/lienkhuong2.015f47d5a8ec7a4748eb.jpg",
+    "static/media/fa-v4compatibility.ttf": "/xuyen-viet-frontend/static/media/fa-v4compatibility.0f6cb412603527bda691.ttf",
+    "static/media/fa-v4compatibility.woff2": "/xuyen-viet-frontend/static/media/fa-v4compatibility.6cfec8414be20e2c3426.woff2",
+    "static/media/slick.svg": "/xuyen-viet-frontend/static/media/slick.2630a3e3eab21c607e21.svg",
+    "static/media/slick.eot": "/xuyen-viet-frontend/static/media/slick.a4e97f5a2a64f0ab1323.eot",
+    "static/media/slick.ttf": "/xuyen-viet-frontend/static/media/slick.c94f7671dcc99dce43e2.ttf",
+    "static/media/slick.woff": "/xuyen-viet-frontend/static/media/slick.295183786cd8a1389865.woff",
     "index.html": "/xuyen-viet-frontend/index.html",
-    "static/media/sprites.svg": "/xuyen-viet-frontend/static/media/sprites.c08944fed399e84633d0.svg",
-    "static/media/grabbing.svg": "/xuyen-viet-frontend/static/media/grabbing.92ec62eb995e79248066.svg",
-    "static/media/grab.svg": "/xuyen-viet-frontend/static/media/grab.6a052e927d39314632fd.svg",
-    "static/media/background.svg": "/xuyen-viet-frontend/static/media/background.73c746e88409ccb4b512.svg",
-    "static/media/compass.svg": "/xuyen-viet-frontend/static/media/compass.0f193cd39061ea43cc46.svg",
-    "main.366ab646.css.map": "/xuyen-viet-frontend/static/css/main.366ab646.css.map",
-    "main.849fba38.js.map": "/xuyen-viet-frontend/static/js/main.849fba38.js.map",
-    "453.f0cb9295.chunk.js.map": "/xuyen-viet-frontend/static/js/453.f0cb9295.chunk.js.map"
+    "main.be820078.css.map": "/xuyen-viet-frontend/static/css/main.be820078.css.map",
+    "main.26b9a540.js.map": "/xuyen-viet-frontend/static/js/main.26b9a540.js.map",
+    "453.5fd139db.chunk.js.map": "/xuyen-viet-frontend/static/js/453.5fd139db.chunk.js.map"
   },
   "entrypoints": [
-    "static/css/main.366ab646.css",
-    "static/js/main.849fba38.js"
+    "static/css/main.be820078.css",
+    "static/js/main.26b9a540.js"
   ]
 }
