@@ -50,7 +50,7 @@ export const addReview = async (reviewData) => {
   try {
     const token = localStorage.getItem('token');
     console.log(token)
-    const response = await axios.post(`${API_URL}/place/addReview`,
+    const response = await axios.post('${API_URL}/place/addReview', 
       {
         placeId: reviewData.placeId,
         rating: reviewData.rating,
