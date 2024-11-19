@@ -2,10 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import logo from '../../style/img/logodd.png';
 import { useAuth } from '../../context/AuthContext';
-import { Button } from 'antd';
-import { useNotification } from '../../context/NotificationContext';
-import { getUserInfo } from '../../api/callApi';
-import RatingModal from './RatingModal';
+import { Button, Input } from 'antd';
+import { getNotifications } from "../../api/ApiItinerary";
+
+import {getUserInfo} from'../../api/callApi';
 import {
   HomeOutlined,
   SearchOutlined,
@@ -15,44 +15,61 @@ import {
   LogoutOutlined,
   LoginOutlined,
   BellOutlined,
-  DeleteOutlined
 } from '@ant-design/icons';
-import { ToastContainer } from 'react-toastify';
+import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 const Navbar = () => {
   const navigate = useNavigate();
   const { isTokenExists, logout } = useAuth();
-  const { notifications, markAsRead, deleteNotification } = useNotification();
-  const [userInfo, setUserInfo] = useState(null);
+  const [userInfo, setUserInfo] = useState(null); 
   const [isExploreSubNavVisible, setIsExploreSubNavVisible] = useState(false);
   const [isNotificationsVisible, setIsNotificationsVisible] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [isRatingModalOpen, setIsRatingModalOpen] = useState(false);
-const [selectedActivity, setSelectedActivity] = useState(null);
+  const [notifications, setNotifications] = useState([]);
+  const [loadingNotifications, setLoadingNotifications] = useState(false);
+  const [error, setError] = useState(null);  
+  const [loading, setLoading] = useState(true); 
 
   useEffect(() => {
-    const fetchUserInfo = async () => {
+    const fetchNotifications = async () => {
+      setLoadingNotifications(true);
       try {
-        const data = await getUserInfo();
-        setUserInfo(data);
-        setLoading(false);
-      } catch (err) {
-        setError(err);
-        setLoading(false);
+        const response = await getNotifications();
+        if (Array.isArray(response.notifications)) {
+          setNotifications(response.notifications);
+        } else {
+          setNotifications([]);
+        }
+      } catch (error) {
+        console.error('Error fetching notifications:', error);
+        toast.error('Không thể tải thông báo!');
+      } finally {
+        setLoadingNotifications(false);
       }
     };
 
     if (isTokenExists()) {
-      fetchUserInfo();
+      fetchNotifications();
     }
   }, [isTokenExists]);
+  useEffect(() => {
 
+    const fetchUserInfo = async () => {
+      try {
+        const data = await getUserInfo();  
+        console.log(data)
+        setUserInfo(data);  
+        setLoading(false);   
+      } catch (err) {
+        setError(err);       // If there was an error, store it in the state
+        setLoading(false);   // Stop loading regardless of success or failure
+      }
+    };
+
+    fetchUserInfo();
+  }, []); 
   const handleNavigation = (path) => {
     navigate(path);
-    setIsNotificationsVisible(false);
-    setIsExploreSubNavVisible(false);
   };
 
   const handleLogout = () => {
@@ -61,94 +78,22 @@ const [selectedActivity, setSelectedActivity] = useState(null);
   };
 
   const toggleExploreSubNav = () => {
-    setIsExploreSubNavVisible(prev => !prev);
-    setIsNotificationsVisible(false);
-  };
-  const toggleNotifications = () => {
-    setIsNotificationsVisible(prev => !prev);
-    setIsExploreSubNavVisible(false);
+    setIsExploreSubNavVisible((prev) => !prev);
   };
 
-  //   try {
-  //     console.log('Notification clicked:', notification);
-      
-  //     if (notification.type === 'TRIP_START' && notification.itineraryId) {
-  //       // Đánh dấu là đã đọc
-  //       await markAsRead(notification._id);
-        
-  //       // Chuyển hướng đến trang chi tiết lịch trình
-  //       navigate(`/itinerary/${notification.itineraryId}`, {
-  //         state: { 
-  //           viewOnly: true,
-  //           fromNotification: true 
-  //         }
-  //       });
-        
-  //       // Đóng dropdown thông báo
-  //       setIsNotificationsVisible(false);
-  //     }
-  //   } catch (error) {
-  //     console.error('Error handling notification click:', error);
-  //   }
-  // };
-  const handleDeleteNotification = async (notificationId) => {
-    try {
-      await deleteNotification(notificationId);
-    } catch (error) {
-      console.error('Error deleting notification:', error);
-    }
-  };
-
-  const handleMarkAllAsRead = async () => {
-    try {
-      for (const notification of notifications) {
-        if (!notification.isRead) {
-          await markAsRead(notification._id);
-        }
-      }
-    } catch (error) {
-      console.error('Error marking all as read:', error);
-    }
-  };
-  const handleNotificationClick = async (notification) => {
-    try {
-      await markAsRead(notification._id);
-      
-      if (notification.type === 'TRIP_START') {
-        // Kiểm tra xem có itineraryId trong data không
-        const itineraryId = notification.data?.itineraryId;
-        if (itineraryId && itineraryId !== 'testItineraryId') {
-          navigate(`/itinerary/${itineraryId}`, {
-            state: { viewOnly: true }
-          });
-        }
-      } else if (notification.type === 'REVIEW_NEEDED' && notification.data) {
-        // Truyền toàn bộ data vào modal đánh giá
-        setSelectedActivity({
-          activityId: notification.data.activityId,
-          itineraryId: notification.data.itineraryId,
-          placeId: notification.data.placeId
-        });
-        setIsRatingModalOpen(true);
-      }
-      
-      setIsNotificationsVisible(false);
-    } catch (error) {
-      console.error('Error handling notification:', error);
-    }
+  const handleNotificationClick = () => {
+    setIsNotificationsVisible((prev) => !prev);
   };
 
   return (
-    <>
-    <nav className="fixed z-30 bg-white shadow-lg top-0 left-0 w-full mb-5 border-b border-gray-200">
-      <div className="container mx-auto px-2 py-4">
+    <nav className=" fixed z-30 bg-white shadow-lg top-0 left-0 w-full mb-5 border-b border-gray-200">
+      <div className="container mx-auto px-2 py-4 flex flex-col">
         <div className="flex justify-between items-center">
           <img src={logo} alt="Logo" className="h-16" />
-          
-          <div className="flex space-x-8 ml-8 relative">
+          <div className="hidden md:flex space-x-8 ml-8 relative">
             <Button
               icon={<HomeOutlined />}
-              onClick={() => handleNavigation('/home')}
+              onClick={() => handleNavigation('/')}
               type="link"
               className="text-gray-700 text-lg hover:text-blue-500 transition duration-200"
             >
@@ -164,7 +109,7 @@ const [selectedActivity, setSelectedActivity] = useState(null);
                 Khám Phá
               </Button>
               {isExploreSubNavVisible && (
-                <div className="absolute left-0 top-full mt-2 bg-white shadow-lg rounded-lg border border-gray-200 w-48 z-50">
+                <div className="absolute left-0 top-full mt-2 bg-white shadow-lg rounded-lg border border-gray-200 w-full z-10">
                   <Button
                     onClick={() => handleNavigation('/explore/vote')}
                     type="link"
@@ -207,71 +152,41 @@ const [selectedActivity, setSelectedActivity] = useState(null);
               Chuyến bay
             </Button>
           </div>
+      
+      
 
-          <div className="flex items-center space-x-4">
-          <div className="relative">
-  <div className="cursor-pointer" onClick={toggleNotifications}>
-    <BellOutlined className="text-2xl text-gray-600 hover:text-blue-500" />
-    {notifications.length > 0 && (
-      <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-        {notifications.length}
-      </span>
-    )}
-  </div>
-
-  {isNotificationsVisible && (
-  <div className="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-xl border border-gray-200 max-h-96 overflow-y-auto z-50">
-    <div className="p-4 border-b border-gray-200">
-      <div className="flex justify-between items-center">
-        <h3 className="font-semibold text-gray-700">Thông báo</h3>
-        <span 
-          className="text-sm text-blue-500 cursor-pointer hover:text-blue-700"
-          onClick={handleMarkAllAsRead}
-        >
-          Đánh dấu tất cả đã đọc
-        </span>
-      </div>
-    </div>
-    
-    <div className="divide-y divide-gray-200">
-      {notifications && notifications.length > 0 ? (
-        notifications.map((notification) => (
-          <div 
-          key={notification._id}
-          className={`p-4 hover:bg-gray-50 transition-colors duration-200 cursor-pointer ${
-            !notification.isRead ? 'bg-blue-50' : ''
-          }`}
-          onClick={() => handleNotificationClick(notification)}
-        >
-            <div className="flex items-start justify-between">
-              <div className="flex-1">
-                <p className="text-sm text-gray-800">{notification.message}</p>
-                <p className="text-xs text-gray-500 mt-1">
-                  {new Date(notification.createdAt).toLocaleString()}
-                </p>
+          <div className="flex items-center space-x-4 mr">
+            {/* so luong tin nhan thong bao  */}
+             {notifications.length > 0 && (
+              <span className="absolute  mb-8  px-2 py-1 ml-8 text-xs text-white bg-red-500 rounded-full">
+                {notifications.length}
+              </span>
+            )}
+            <Button
+              icon={<BellOutlined />}
+              onClick={handleNotificationClick}
+              type="link"
+              className="text-gray-700 hover:text-blue-500 transition duration-200"
+            />
+           
+            {isNotificationsVisible && (
+              <div className="absolute top-full right-0 mt-2 bg-white shadow-lg rounded-lg border border-gray-200 w-64 p-4 z-20">
+                <ul>
+                  {notifications.length > 0 ? (
+                    notifications.map((notification, index) => (
+                      <li
+                        key={index}
+                        className="mb-2 p-2 border-b border-gray-200 text-gray-700"
+                      >
+                        {notification.message}
+                      </li>
+                    ))
+                  ) : (
+                    <li className="text-gray-500">Không có thông báo mới.</li>
+                  )}
+                </ul>
               </div>
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleDeleteNotification(notification._id);
-                }}
-                className="ml-2 text-gray-400 hover:text-gray-600"
-              >
-                <DeleteOutlined />
-              </button>
-            </div>
-          </div>
-        ))
-      ) : (
-        <div className="p-4 text-center text-gray-500">
-          Không có thông báo
-        </div>
-      )}
-    </div>
-  </div>
-)}
-</div>
-
+            )}
             {isTokenExists() ? (
               <Button
                 icon={<LogoutOutlined />}
@@ -292,28 +207,29 @@ const [selectedActivity, setSelectedActivity] = useState(null);
                 Đăng nhập
               </Button>
             )}
+          </div>
+           {/* Hiển thị avatar nếu có */}
+          <div>
+          {userInfo ? (
+  <div className=''>
+   
+    {userInfo.data ? (
+      <img src={userInfo.data.avatar} alt="Avatar" className="w-10 h-10 rounded-full" />
+    ) : (
+      <p>No avatar available</p>
+    )}
+  </div>
+) : (
+  <p>No user info available</p>
+)}
 
-            {userInfo && userInfo.data && (
-              <img 
-                src={userInfo.data.avatar} 
-                alt="Avatar" 
-                className="w-10 h-10 rounded-full"
-              />
-            )}
           </div>
         </div>
       </div>
+
+      {/* Hiển thị container cho thông báo */}
       <ToastContainer />
     </nav>
-
-    {isRatingModalOpen && selectedActivity && (
-      <RatingModal
-        isOpen={isRatingModalOpen}
-        onClose={() => setIsRatingModalOpen(false)}
-        activity={selectedActivity}
-      />
-    )}
-        </>
   );
 };
 
