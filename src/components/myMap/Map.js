@@ -1,5 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { MapContainer, TileLayer, GeoJSON } from 'react-leaflet';
+import { 
+  MapContainer, 
+  TileLayer, 
+  GeoJSON, 
+  ZoomControl,
+  ScaleControl 
+} from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import vietnamData from '../province/diaphantinh.json';
 import { saveProvince, getProvince } from '../../api/callApi';
@@ -12,6 +18,7 @@ const Map = () => {
   const [provinceStatus, setProvinceStatus] = useState({});
   const [showModal, setShowModal] = useState(false);
   const [photo, setPhoto] = useState(null);
+  const [isLoading, setIsLoading] = useState(false)
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -46,7 +53,7 @@ const Map = () => {
     };
   };
 
-  const isLoggedIn = () => !!localStorage.getItem('accessToken');
+  const isLoggedIn = () => !!localStorage.getItem('token');
 
   const onEachFeature = (feature, layer) => {
     const province = feature.properties.ten_tinh;
@@ -102,50 +109,68 @@ const Map = () => {
     }
     setShowModal(false);
   };
-
   return (
-    <>
-    
-     <MapContainer className="map-container z-20" center={[16, 109]} zoom={6} style={{ height: 'calc(100vh - 60px)', width: '100%' }}>
-  <TileLayer
-    url={`https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token=${accessToken}`}
-    id="mapbox/streets-v11"
-  />
-  <GeoJSON data={vietnamData} style={style} onEachFeature={onEachFeature} />
-</MapContainer>
-
-{/* {showModal && (
-  <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-    <div className="bg-white rounded-lg shadow-lg p-6 max-w-lg w-full z-60">
-      <h2 className="text-xl font-semibold mb-4">Actions for {selectedProvince}</h2>
-      <div className="mb-4">
-        <input type="file" accept="image/*" onChange={handleUploadPhoto} className="w-full border p-2 rounded"/>
+    <div className="relative">
+      {/* Map Container with Enhanced Styling */}
+      <div className="rounded-xl overflow-hidden shadow-lg border border-gray-200">
+        <MapContainer 
+          className="map-container z-20" 
+          center={[16, 109]} 
+          zoom={6} 
+          style={{ 
+            height: 'calc(100vh - 80px)', 
+            width: '100%',
+            borderRadius: '0.75rem'
+          }}
+          zoomControl={false}
+        >
+          <TileLayer
+            url={`https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token=${accessToken}`}
+            id="mapbox/streets-v11"
+          />
+          
+          <GeoJSON 
+            data={vietnamData} 
+            style={style} 
+            onEachFeature={onEachFeature}
+          />
+  
+          {/* Legend */}
+          <div className="absolute bottom-5 right-5 bg-white p-4 rounded-lg shadow-md z-[1000]">
+            <h3 className="font-semibold text-gray-700 mb-2">Chú thích</h3>
+            <div className="space-y-2">
+              <div className="flex items-center">
+                <div className="w-4 h-4 bg-green-500 rounded mr-2"></div>
+                <span className="text-sm">Đã đến</span>
+              </div>
+              <div className="flex items-center">
+                <div className="w-4 h-4 bg-gray-300 rounded mr-2"></div>
+                <span className="text-sm">Chưa đến</span>
+              </div>
+            </div>
+          </div>
+        </MapContainer>
       </div>
-      <div className="flex justify-end space-x-2">
-        <button
-          onClick={handleSubmit}
-          className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition"
-        >
-          Submit
-        </button>
-        <button
-          onClick={handleMistake}
-          className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition"
-        >
-          Selected by Mistake
-        </button>
-        <button
-          onClick={() => setShowModal(false)}
-          className="bg-gray-300 text-black px-4 py-2 rounded hover:bg-gray-400 transition"
-        >
-          Close
-        </button>
-      </div>
+  
+      {/* Province Info Overlay */}
+      {selectedProvince && (
+        <div className="absolute top-5 left-5 bg-white p-4 rounded-lg shadow-md z-[1000] max-w-xs">
+          <h3 className="font-semibold text-gray-800 mb-2">
+            {selectedProvince}
+          </h3>
+          <div className="text-sm text-gray-600">
+            Click để thêm vào danh sách đã đến
+          </div>
+        </div>
+      )}
+  
+      {/* Loading Indicator */}
+      {isLoading && (
+        <div className="absolute inset-0 bg-white bg-opacity-75 flex items-center justify-center z-[1001]">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+        </div>
+      )}
     </div>
-  </div>
-)} */}
-
-    </>
   );
 };
 

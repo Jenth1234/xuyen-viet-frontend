@@ -11,6 +11,7 @@ import NavBar from "../components/nav/NavBar";
 import Footer from "../components/Footer";
 import bgItinerary from "../style/img/lienkhuong2.jpg";
 import MyItinerary from "../components/itinerary/MyItinerary";
+import HighlightItinerary from '../components/itinerary/HighlightItinerary';
 
 const Itinerary = () => {
   const [itinerary, setItinerary] = useState([
@@ -28,7 +29,8 @@ const Itinerary = () => {
   };
 
   const handleCreateIdea = () => {
-    alert("Tạo ý tưởng cho riêng bạn!");
+    // Thay vì alert, chuyển hướng đến trang SuggestItinerary
+    navigate('/suggest-itinerary');
   };
 
   const handleAddMyItinerary = () => {
@@ -36,107 +38,98 @@ const Itinerary = () => {
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-gray-100"> {/* Nền tổng thể xám nhạt */}
-      <main className="flex-1 container mx-auto px-4 py-8">
-        <h1 className="text-4xl font-bold mb-6 text-blue-600">
-          Lên Lịch Trình
-        </h1>
-
-        {/* Phần tạo lịch trình với hình nền */}
-        <div className="relative mb-8">
+    <div className="flex flex-col min-h-screen bg-gray-50">
+      <main className="flex-1">
+        {/* Hero Section */}
+        <div className="relative h-[400px] mb-12">
           <img
             src={bgItinerary}
-            alt="Nền"
-            className="w-full h-96 object-cover rounded border border-gray-300" 
+            alt="Background"
+            className="w-full h-full object-cover"
           />
-          <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <div className="text-center mb-4">
-              <h2 className="text-white text-5xl font-bold">
-                Khám phá chuyến đi của bạn, bắt đầu từ đây!
-              </h2>
-              <p className="text-white text-4xl">
+          <div className="absolute inset-0 bg-black/50" />
+          <div className="absolute inset-0 flex flex-col items-center justify-center px-4">
+            <div className="text-center space-y-4 max-w-3xl mx-auto">
+              <h1 className="text-4xl font-bold text-white">
+                Khám Phá Chuyến Đi Của Bạn
+              </h1>
+              <p className="text-xl text-gray-200">
                 Lên kế hoạch dễ dàng, tận hưởng trọn vẹn!
               </p>
+              <div className="flex gap-3 justify-center mt-6">
+                <button
+                  onClick={handleNavigateCreateItinerary}
+                  className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all"
+                >
+                  Tạo Lịch Trình
+                </button>
+                <button
+                  onClick={handleCreateIdea}
+                  className="px-6 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition-all"
+                >
+                  Tạo Ý Tưởng
+                </button>
+              </div>
             </div>
-            <button
-              onClick={handleNavigateCreateItinerary}
-              className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 mb-4"
-            >
-              Tạo Lịch Trình
-            </button>
-            <button
-              onClick={handleCreateIdea}
-              className="bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-600 mb-4"
-            >
-              Tạo Ý Tưởng Cho Riêng Bạn
-            </button>
           </div>
         </div>
-
-        <div className="mx-32">
-          <div>
+  
+        <div className="max-w-6xl mx-auto px-4">
+          {/* My Itinerary Section */}
+          <div className="mb-12">
             <MyItinerary />
           </div>
-
-          {/* Hướng dẫn sử dụng */}
-          <div className="mb-8 p-6  rounded  "> {/* Thêm viền */}
-            <h2 className="text-2xl text-center font-semibold mb-4">Hướng Dẫn Sử Dụng</h2>
-            <div className="flex justify-between space-x-4">
-              <div className="flex-1 text-center p-4 rounded  "> 
-                <FontAwesomeIcon
-                  icon={faEarthAmericas}
-                  className="h-10 w-10 text-green-200  mb-2"
-                />
-                <h3 className="text-lg font-semibold mb-2">Bước 1</h3>
-                <p className="text-gray-700">
-                  Tạo Lịch Trình bằng cách nhấn vào nút "Tạo Lịch Trình".
-                </p>
-              </div>
-              <div className="flex-1 text-center p-4 rounded  ">
-                <FontAwesomeIcon
-                  icon={faCalendarAlt}
-                  className="h-10 w-10 text-green-200  mb-2"
-                />
-                <h3 className="text-lg font-semibold mb-2">Bước 2</h3>
-                <p className="text-gray-700">
-                  Nhập thông tin điểm đến và thời gian cho chuyến đi của bạn.
-                </p>
-              </div>
-              <div className="flex-1 text-center p-4 rounded ">
-                <FontAwesomeIcon
-                  icon={faCheckCircle}
-                  className="h-10 w-10 text-green-200  mb-2"
-                />
-                <h3 className="text-lg font-semibold mb-2">Bước 3</h3>
-                <p className="text-gray-700">
-                  Thêm các hoạt động vào từng ngày trong lịch trình của bạn.
-                </p>
-              </div>
-              <div className="flex-1 text-center p-4 rounded  "> 
-                <FontAwesomeIcon
-                  icon={faShare}
-                  className="h-10 w-10 text-green-200  mb-2"
-                />
-                <h3 className="text-lg font-semibold mb-2">Bước 4</h3>
-                <p className="text-gray-700">
-                  Lưu trữ và chia sẻ hành trình của riêng bạn với bạn bè.
-                </p>
-              </div>
+  
+          {/* Guide Section */}
+          <div className="mb-12">
+            <h2 className="text-2xl font-bold text-center mb-8 text-gray-800">
+              Hướng Dẫn Sử Dụng
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {[
+                {
+                  icon: faEarthAmericas,
+                  title: "Bước 1",
+                  description: "Tạo Lịch Trình mới",
+                },
+                {
+                  icon: faCalendarAlt,
+                  title: "Bước 2",
+                  description: "Nhập thông tin và thời gian",
+                },
+                {
+                  icon: faCheckCircle,
+                  title: "Bước 3",
+                  description: "Thêm hoạt động cho từng ngày",
+                },
+                {
+                  icon: faShare,
+                  title: "Bước 4",
+                  description: "Lưu trữ và chia sẻ hành trình",
+                },
+              ].map((step, index) => (
+                <div
+                  key={index}
+                  className="bg-white p-6 rounded-lg shadow hover:shadow-md"
+                >
+                  <div className="flex flex-col items-center text-center">
+                    <div className="w-12 h-12 flex items-center justify-center bg-green-100 rounded-full mb-3">
+                      <FontAwesomeIcon
+                        icon={step.icon}
+                        className="h-6 w-6 text-green-600"
+                      />
+                    </div>
+                    <h3 className="text-lg font-medium mb-2">{step.title}</h3>
+                    <p className="text-sm text-gray-600">{step.description}</p>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
-
-          {/* Lịch trình nổi bật */}
-          <div className="mb-8 p-6  rounded ">
-            <h2 className="text-2xl font-semibold mb-4">Lịch Trình Nổi Bật</h2>
-            <ul className="list-disc ml-5">
-              {itinerary
-                .filter((item) => item.day === 1)
-                .map((item, index) => (
-                  <li key={index} className="text-gray-700">
-                    Ngày {item.day}: {item.activities.join(", ")}
-                  </li>
-                ))}
-            </ul>
+  
+          {/* Highlight Itinerary Section */}
+          <div className="mb-12">
+            <HighlightItinerary />
           </div>
         </div>
       </main>

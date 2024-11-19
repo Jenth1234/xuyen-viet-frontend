@@ -1,26 +1,27 @@
-import { getItineraryByUserId } from '../../api/callApi'; // Import hàm getItinerary
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom'; // Import useNavigate
+import { useNavigate } from 'react-router-dom';
+import { getItineraryByUserId } from '../../api/callApi';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faEllipsisVertical } from '@fortawesome/free-solid-svg-icons';
+import { faEllipsisVertical, faCalendarAlt, faMapMarkerAlt, faClock } from '@fortawesome/free-solid-svg-icons';
 
 const MyItinerary = () => {
   const [itineraries, setItineraries] = useState([]);
   const [showOptions, setShowOptions] = useState(null);
-  const navigate = useNavigate(); // Sử dụng useNavigate
+  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchItineraries = async () => {
       try {
+        setLoading(true);
         const response = await getItineraryByUserId();
-        console.log(response);
-
-        // Đảm bảo response là một mảng các lịch trình
         if (Array.isArray(response)) {
           setItineraries(response);
         }
       } catch (error) {
         console.error('Error fetching itineraries:', error);
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -28,63 +29,106 @@ const MyItinerary = () => {
   }, []);
 
   const handleEdit = (id) => {
-    // Điều hướng đến trang chi tiết lộ trình
     navigate(`/itinerary/${id}`);
+    setShowOptions(null);
   };
 
   const handleDelete = (id) => {
-    // Xử lý hành động xóa
-    console.log('Delete:', id);
-    // Cập nhật state để xóa item khỏi danh sách
     setItineraries(itineraries.filter(itinerary => itinerary._id !== id));
+    setShowOptions(null);
   };
 
+  if (loading) {
+    return (
+      <div className="min-h-[200px] flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
+      </div>
+    );
+  }
+
   return (
-    <div className="p-6 bg-gray-100">
-      <h2 className="text-2xl font-semibold mb-4">Lịch Trình Của Bạn nè</h2>
-      <div className="overflow-x-auto">
-        <div className="flex gap-4">
+    <div className="bg-white rounded-xl shadow-sm p-8">
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-2xl font-bold text-gray-800">Lịch Trình Của Bạn</h2>
+        <button
+          onClick={() => navigate('/create-itinerary')}
+          className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+        >
+          + Tạo Lịch Trình Mới
+        </button>
+      </div>
+
+      {itineraries.length === 0 ? (
+        <div className="text-center py-12 bg-gray-50 rounded-lg">
+          <FontAwesomeIcon icon={faCalendarAlt} className="h-12 w-12 text-gray-400 mb-4" />
+          <p className="text-gray-500">Bạn chưa có lịch trình nào. Hãy tạo lịch trình đầu tiên!</p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {itineraries.map((itinerary) => (
-            <div key={itinerary._id} className="w-60 p-4 flex-shrink-0 relative">
-              <div className="border rounded-lg p-4 bg-white shadow">
-                <h3 className="text-xl font-bold mb-2 flex justify-between items-center">
-                  {itinerary.NAME}
-                  <button 
-                    onClick={() => setShowOptions(showOptions === itinerary._id ? null : itinerary._id)}
-                    className="text-gray-600 hover:text-gray-900"
-                  >
-                    <FontAwesomeIcon icon={faEllipsisVertical} className="h-6 w-6" />
-                  </button>
-                </h3>
-                <p><strong>Ngày đi:</strong> {new Date(itinerary.START_DATE).toLocaleDateString()}</p>
-                <p><strong>Ngày về:</strong> {new Date(itinerary.END_DATE).toLocaleDateString()}</p>
-                {showOptions === itinerary._id && (
-                  <div className="absolute top-0 right-0 mt-2 w-48 bg-white border border-gray-300 rounded-lg shadow-lg">
-                    <ul>
-                      <li>
-                        <button 
-                          onClick={() => handleEdit(itinerary._id)} 
-                          className="block px-4 py-2 text-gray-700 hover:bg-gray-100 w-full text-left"
+            <div
+              key={itinerary._id}
+              className="bg-white rounded-xl border border-gray-200 hover:shadow-md transition-shadow duration-300"
+            >
+              <div className="p-6">
+                <div className="flex justify-between items-start mb-4">
+                  <h3 className="text-lg font-semibold text-gray-800 line-clamp-2">
+                    {itinerary.NAME}
+                  </h3>
+                  <div className="relative">
+                    <button
+                      onClick={() => setShowOptions(showOptions === itinerary._id ? null : itinerary._id)}
+                      className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                    >
+                      <FontAwesomeIcon icon={faEllipsisVertical} className="h-5 w-5 text-gray-500" />
+                    </button>
+                    
+                    {showOptions === itinerary._id && (
+                      <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-100 z-10">
+                        <button
+                          onClick={() => handleEdit(itinerary._id)}
+                          className="w-full px-4 py-3 text-left text-gray-700 hover:bg-gray-50 flex items-center space-x-2"
                         >
-                          Sửa
+                          <span>Chỉnh sửa</span>
                         </button>
-                      </li>
-                      <li>
-                        <button 
-                          onClick={() => handleDelete(itinerary._id)} 
-                          className="block px-4 py-2 text-gray-700 hover:bg-gray-100 w-full text-left"
+                        <button
+                          onClick={() => handleDelete(itinerary._id)}
+                          className="w-full px-4 py-3 text-left text-red-600 hover:bg-red-50 flex items-center space-x-2"
                         >
-                          Xóa
+                          <span>Xóa lịch trình</span>
                         </button>
-                      </li>
-                    </ul>
+                      </div>
+                    )}
                   </div>
-                )}
+                </div>
+
+                <div className="space-y-3">
+                  <div className="flex items-center text-gray-600">
+                    <FontAwesomeIcon icon={faCalendarAlt} className="h-4 w-4 mr-2" />
+                    <span className="text-sm">
+                      {new Date(itinerary.START_DATE).toLocaleDateString('vi-VN')} - {new Date(itinerary.END_DATE).toLocaleDateString('vi-VN')}
+                    </span>
+                  </div>
+                  
+                  <div className="flex items-center text-gray-600">
+                    <FontAwesomeIcon icon={faClock} className="h-4 w-4 mr-2" />
+                    <span className="text-sm">
+                      {Math.ceil((new Date(itinerary.END_DATE) - new Date(itinerary.START_DATE)) / (1000 * 60 * 60 * 24))} ngày
+                    </span>
+                  </div>
+                </div>
+
+                <button
+                  onClick={() => handleEdit(itinerary._id)}
+                  className="mt-4 w-full py-2 text-green-600 hover:text-green-700 text-sm font-medium transition-colors text-center border border-green-600 rounded-lg hover:bg-green-50"
+                >
+                  Xem chi tiết →
+                </button>
               </div>
             </div>
           ))}
         </div>
-      </div>
+      )}
     </div>
   );
 };

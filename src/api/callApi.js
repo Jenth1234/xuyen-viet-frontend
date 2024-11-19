@@ -12,7 +12,7 @@
    */
   export const saveProvince = async (PROVINCE, STATUS) => {
     try {
-      const token = localStorage.getItem('accessToken');
+      const token = localStorage.getItem('token');
       const response = await axios.post(`${API_URL}/province/create`, {
         PROVINCE,
         STATUS
@@ -34,7 +34,8 @@
    */
   export const getProvince = async () => {
     try {
-      const token = localStorage.getItem('accessToken');
+      const token = localStorage.getItem('token');
+      
       const response = await axios.post(`${API_URL}/province/getVisited`, null, {
         headers: {
           'Authorization': token ? `Bearer ${token}` : ''
@@ -66,13 +67,10 @@
     }
   };
 
-  /**
-   * Gửi yêu cầu POST để lấy thông tin người dùng
-   * @param {string} token - Token xác thực
-   * @returns {Promise} - Trả về promise từ axios
-   */
-// Hàm getUserInfo trong callApi.js
-export const getUserInfo = async (token) => {
+
+export const getUserInfo = async () => {
+  const token = localStorage.getItem('token');
+  
   try {
     const response = await axios.post(`${API_URL}/user/info`, {}, {
       headers: {
@@ -186,7 +184,7 @@ export const getUserInfo = async (token) => {
    */
   export const searchFlights = async (origin, destination, departureDate) => {
     try {
-      const token = localStorage.getItem('accessToken');
+      const token = localStorage.getItem('token');
       const response = await axios.get(`${API_URL}/flight/search-flights`, {
         params: {
           origin,
@@ -230,19 +228,7 @@ export const getUserInfo = async (token) => {
       throw error;
     }
   };
-  export const getVisitedProvinces = async (token) => {
-    try {
-      const response = await axios.post(`${API_URL}/province/getVisited`, null, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-      return response.data;
-    } catch (error) {
-      console.error('Error fetching visited provinces:', error.response?.data || error.message);
-      throw error;
-    }
-  };
+
 
 
 // export const getUserUploads = async (token) => {
@@ -293,7 +279,7 @@ export const updateArrivalDates = async (province, dates) => {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+        'Authorization': `Bearer ${localStorage.getItem('token')}`
       },
       body: JSON.stringify({ dates })
     });
@@ -464,7 +450,7 @@ export const createItinerary = async (itineraryData, userId) => {
     };
 
     // Lấy mã thông báo từ localStorage
-    const token = localStorage.getItem('accessToken');
+    const token = localStorage.getItem('token');
 
     if (!token) {
       throw new Error('Authorization token is required');
@@ -516,7 +502,7 @@ export const createActivity = async (activityData) => {
 };
 export const getItinerary = async (itineraryId) => {
   try {
-    const token = localStorage.getItem('accessToken');
+    const token = localStorage.getItem('token');
     const response = await fetch(`${API_URL}/itinerary/getById/${itineraryId}`, {
       method: 'GET',
       headers: {
@@ -562,7 +548,7 @@ export const getActivity = async (activityId) => {
 
 export const getItineraryByUserId = async () => {
   try {
-    const token = localStorage.getItem('accessToken');
+    const token = localStorage.getItem('token');
     const response = await fetch(`${API_URL}/itinerary/getByUserId`, {
       method: 'GET',
       headers: {
@@ -594,7 +580,7 @@ export const updateActivity = async (activityId, updatedData) => {
 
 export const updateItinerary = async (itineraryId, updatedData) => {
   try {
-    const token = localStorage.getItem('accessToken');
+    const token = localStorage.getItem('token');
     console.log(token)
     const response = await fetch(`${API_URL}/itinerary/${itineraryId}`, {
       method: 'PUT',
@@ -618,3 +604,26 @@ export const updateItinerary = async (itineraryId, updatedData) => {
   }
 };
 
+export const submitActivityReview = async (reviewData) => {
+  try {
+    const token = localStorage.getItem('token');
+    const response = await fetch(`${API_URL}/activity/review`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify(reviewData),
+    });
+
+    if (!response.ok) {
+      throw new Error('Lỗi khi gửi đánh giá');
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Lỗi khi gửi đánh giá:', error);
+    throw error;
+  }
+};

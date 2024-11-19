@@ -1,265 +1,99 @@
-import React, { useState, useEffect, useRef } from "react";
-import { useLocation, useParams } from "react-router-dom";
-import Select from "react-select";
-import ActivityModal from "./modal/ActivityModal";
-import { getItinerary } from "../../api/callApi";
-import bgItinerary from "../../style/img/lienkhuong2.jpg";
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCalendarAlt, faDollarSign, faEdit, faMapMarkerAlt } from '@fortawesome/free-solid-svg-icons';
+// import React, { useState, useEffect } from 'react';
 
-const provinces = [
-  "Hà Nội",
-  "Hồ Chí Minh",
-  "Đà Nẵng",
-  "Hải Phòng",
-  "Cần Thơ",
-  // Thêm các tỉnh thành khác vào đây
-].map((province) => ({ value: province, label: province }));
+// const Directions = () => {
+//   const [routes, setRoutes] = useState([]);
+//   const [error, setError] = useState(null);
+//   const [loading, setLoading] = useState(true);
 
-const DetailPage = () => {
-  const { itineraryId } = useParams();
-  const location = useLocation();
-  const { state } = location;
-  const [activitiesState, setActivitiesState] = useState([]);
-  const [selectedProvinces, setSelectedProvinces] = useState([]);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [currentDayIndex, setCurrentDayIndex] = useState(null);
-  const [itinerary, setItinerary] = useState({});
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
-  const [allActivities, setAllActivities] = useState({});
-  const [totalCost, setTotalCost] = useState("0");
-  const dayRefs = useRef([]);
+//   // Dữ liệu lịch trình cho 3 ngày, mỗi ngày có 2 địa điểm
+//   const itinerary = [
+//     // Ngày 1
+//     [
+//       { name: 'Cầu Rồng', coordinates: '108.222514,16.066688' },
+//       { name: 'Ngũ Hành Sơn', coordinates: '108.269126,15.873071' }
+//     ],
+//     // Ngày 2
+//     [
+//       { name: 'Bãi biển Mỹ Khê', coordinates: '108.247679,16.053680' },
+//       { name: 'The Coffee House', coordinates: '108.214828,16.051221' }
+//     ],
+//     // Ngày 3
+//     [
+//       { name: 'La Maison 1888', coordinates: '108.294661,15.987991' },
+//       { name: 'Bảo tàng Chăm', coordinates: '108.215900,16.060045' }
+//     ]
+//   ];
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await getItinerary(itineraryId);
-        console.log("Response từ API:", response);
+//   // Hàm tính toán lộ trình giữa 2 điểm trong mỗi ngày
+//   const getRouteForDay = (locations) => {
+//     const accessToken = process.env.REACT_APP_MAPBOX_ACCESS_TOKEN;
+//     const coordinates = locations.map(location => location.coordinates).join(';');
+//      console.log(coordinates)
+//     const url = `https://api.mapbox.com/directions/v5/mapbox/driving/${coordinates}?access_token=${accessToken}&overview=full`;
 
-        if (response) {
-          setItinerary(response);
-          const daysData = response.DAYS || [];
-          const activitiesData = response.ACTIVITIES || [];
+//     return fetch(url)
+//       .then(response => response.json())
+//       .then(data => {
+//         if (data.routes && data.routes.length > 0) {
+//           const route = data.routes[0];
+//           return route.legs.map((leg, index) => ({
+//             from: locations[index].name,
+//             to: locations[index + 1] ? locations[index + 1].name : '',
+//             distance: (leg.distance / 1000).toFixed(2), // Khoảng cách tính theo km
+//             duration: (leg.duration / 60).toFixed(2) // Thời gian di chuyển tính theo phút
+//           }));
+//         } else {
+//           throw new Error('Không tìm thấy tuyến đường');
+//         }
+//       })
+//       .catch(err => {
+//         setError(err.message);
+//         return [];
+//       });
+//   };
 
-          const activitiesMap = activitiesData.reduce((map, activity) => {
-            map[activity._id] = activity;
-            return map;
-          }, {});
+//   useEffect(() => {
+//     const fetchAllRoutes = async () => {
+//       const allRoutes = [];
+//       for (const day of itinerary) {
+//         const routeDetails = await getRouteForDay(day);
+//         allRoutes.push(...routeDetails);
+//       }
+//       setRoutes(allRoutes);
+//       setLoading(false);
+//     };
 
-          const activitiesByDay = daysData.map((day) =>
-            (day.ACTIVITIES || []).map((id) => activitiesMap[id] || {})
-          );
+//     fetchAllRoutes();
+//   }, []);
 
-          setActivitiesState(activitiesByDay);
-          setSelectedProvinces(
-            response.selectedProvinces ||
-              Array.from({ length: daysData.length }, () => provinces[0])
-          );
-          setStartDate(response.START_DATE);
-          setEndDate(response.END_DATE);
-          setAllActivities(activitiesMap);
-        } else {
-          console.error("Không tìm thấy dữ liệu.");
-        }
-      } catch (error) {
-        console.error("Lỗi khi gọi API:", error);
-      }
-    };
-    fetchData();
-  }, [itineraryId]);
+//   return (
+//     <div>
+//       <h2>Thông tin di chuyển</h2>
+//       {error && <p style={{ color: 'red' }}>Lỗi: {error}</p>}
+//       {loading ? (
+//         <p>Đang tải thông tin...</p>
+//       ) : (
+//         <div>
+//           {itinerary.map((day, dayIndex) => (
+//             <div key={dayIndex}>
+//               <h3>Ngày {dayIndex + 1}</h3>
+//               {routes
+//                 .filter(route => day.some(location => location.name === route.from))
+//                 .map((route, index) => (
+//                   <div key={index}>
+//                     <p><strong>Điểm xuất phát:</strong> {route.from}</p>
+//                     <p><strong>Điểm đến:</strong> {route.to}</p>
+//                     <p><strong>Khoảng cách:</strong> {route.distance} km</p>
+//                     <p><strong>Thời gian di chuyển:</strong> {route.duration} phút</p>
+//                     <hr />
+//                   </div>
+//                 ))}
+//             </div>
+//           ))}
+//         </div>
+//       )}
+//     </div>
+//   );
+// };
 
-  const calculateTotalCost = () => {
-    let totalCost = 0;
-
-    activitiesState.forEach((dayActivities) => {
-      dayActivities.forEach((activity) => {
-        totalCost += parseFloat(activity.COST) || 0;
-      });
-    });
-
-    return totalCost.toLocaleString(); // Định dạng số tiền
-  };
-
-  useEffect(() => {
-    // Cập nhật tổng chi phí khi activitiesState thay đổi
-    setTotalCost(calculateTotalCost());
-  }, [activitiesState]);
-
-  const calculateDateRange = (start, end) => {
-    const dateArray = [];
-    let currentDate = new Date(start);
-    while (currentDate <= new Date(end)) {
-      dateArray.push(new Date(currentDate));
-      currentDate.setDate(currentDate.getDate() + 1);
-    }
-    return dateArray;
-  };
-
-  const dateRange = calculateDateRange(startDate, endDate);
-
-  const handleProvinceChange = (dayIndex, selectedOption) => {
-    setSelectedProvinces((prevProvinces) => {
-      const updatedProvinces = [...prevProvinces];
-      updatedProvinces[dayIndex] = selectedOption;
-      return updatedProvinces;
-    });
-  };
-
-  const handleAddActivity = (dayIndex) => {
-    setCurrentDayIndex(dayIndex);
-    setIsModalOpen(true);
-};
-
-
-const handleSaveActivity = (newActivity) => {
-  setActivitiesState((prevState) => {
-      const updatedActivities = [...prevState];
-      if (!updatedActivities[currentDayIndex]) {
-          updatedActivities[currentDayIndex] = [];
-      }
-      updatedActivities[currentDayIndex].push(newActivity);
-      return updatedActivities;
-  });
-  closeModal();
-};
-
-  const closeModal = () => {
-    setIsModalOpen(false);
-  };
-
-  const handleScrollToDay = (index) => {
-    if (dayRefs.current[index]) {
-      dayRefs.current[index].scrollIntoView({ behavior: "smooth" });
-    }
-  };
-
-  const handleEditClick = () => {
-    alert('Chỉnh sửa hành trình');
-  };
-
-  return (
-    <div className="max-w-7xl mx-auto mt-24 flex">
-      {/* Sidebar/Aside */}
-      <aside className="w-1/5 p-6 bg-gray-100 text-white rounded-lg shadow-lg sticky top-20">
-        <h2 className="text-xl font-semibold mb-4 text-black flex items-center">
-          <FontAwesomeIcon icon={faCalendarAlt} className="mr-2 text-black" />
-          Tóm tắt hành trình
-        </h2>
-        <ul className="space-y-2">
-          {dateRange.map((date, index) => (
-            <li
-              key={index}
-              className="cursor-pointer p-2 text-black hover:text-blue-300 transition-colors flex items-center"
-              onClick={() => handleScrollToDay(index)}
-            >
-              <FontAwesomeIcon icon={faCalendarAlt} className="mr-2 text-black" />
-              Ngày {index + 1}: {date.toDateString()}
-            </li>
-          ))}
-        </ul>
-        <div className="mt-6 p-4 bg-gray-100 rounded-lg shadow-md border border-gray-600">
-          <h3 className="text-lg font-semibold mb-2 text-black flex items-center">
-            <FontAwesomeIcon icon={faDollarSign} className="mr-2 text-black" />
-            Tổng chi phí:
-          </h3>
-          <p className="text-xl font-bold text-black">{totalCost} VND</p>
-        </div>
-      </aside>
-
-      {/* Main Content */}
-      <div className="w-3/4 relative">
-        <div className="relative w-full h-96">
-          <img
-            src={bgItinerary}
-            alt="Nền"
-            className="w-full h-4/5 object-cover"
-          />
-          <div className="absolute bottom-0 left-1/2 w-2/3 bg-white bg-opacity-90 p-6 rounded-lg shadow-lg transform -translate-x-1/2 border border-gray-300">
-            <h1 className="text-2xl font-bold mb-4 flex items-center">
-              <FontAwesomeIcon icon={faMapMarkerAlt} className="mr-2" />
-              Hành Trình: {itinerary.NAME || "Chưa có tên"}
-            </h1>
-            <p className="text-lg mb-2">
-              <strong>Số ngày:</strong> {itinerary.DAYS?.length || "Không có thông tin"}
-            </p>
-            <p className="text-lg mb-4">
-              <strong>Ngày bắt đầu:</strong> {startDate ? new Date(startDate).toLocaleDateString() : "Chưa xác định"}
-              <br />
-              <strong>Ngày kết thúc:</strong> {endDate ? new Date(endDate).toLocaleDateString() : "Chưa xác định"}
-            </p>
-            <button
-              onClick={handleEditClick}
-              className="absolute bottom-4 right-4 py-2 px-2 bg-gray-600 text-white rounded-lg shadow-md flex items-center"
-            >
-              <FontAwesomeIcon icon={faEdit} className="mr-2" />
-              Chỉnh sửa
-            </button>
-          </div>
-        </div>
-
-        {dateRange.map((date, dayIndex) => (
-          <div
-            key={dayIndex}
-            ref={(el) => (dayRefs.current[dayIndex] = el)}
-            className="day-section mb-8"
-          >
-            <h2 className="text-2xl font-semibold mb-4">
-              Ngày {dayIndex + 1}: {date.toDateString()}
-            </h2>
-
-            <div className="mb-4">
-              <label className="block text-lg font-medium mb-2">Chọn tỉnh:</label>
-              <Select
-                value={selectedProvinces[dayIndex]}
-                onChange={(selectedOption) =>
-                  handleProvinceChange(dayIndex, selectedOption)
-                }
-                options={provinces}
-                className="w-full max-w-md"
-              />
-            </div>
-
-            <div className="activities">
-              <h3 className="text-xl font-medium mb-2">Hoạt động:</h3>
-              {activitiesState[dayIndex] && activitiesState[dayIndex].length > 0 ? (
-                <div className="space-y-4">
-                  {activitiesState[dayIndex].map((activity, idx) => (
-                    <div
-                      key={activity._id || idx}
-                      className="p-4 bg-gray-100 shadow-xl rounded-md flex relative"
-                    >
-                      <div className="flex-1">
-                        <h4 className="text-lg font-semibold">{activity.NAME}</h4>
-                        <p>{activity.DESCRIPTION}</p>
-                        <p className="font-bold">{activity.COST} VND</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <p>Chưa có hoạt động nào cho ngày này.</p>
-              )}
-              <button
-                onClick={() => handleAddActivity(dayIndex)}
-                className="mt-4 py-2 px-4 bg-blue-600 text-white rounded-lg shadow-md"
-              >
-                Thêm hoạt động
-              </button>
-            </div>
-          </div>
-        ))}
-
-{isModalOpen && (
-    <ActivityModal
-        onSave={handleSaveActivity}
-        onClose={closeModal}
-        allActivities={allActivities}
-    />
-)}
-      </div>
-    </div>
-  );
-};
-
-export default DetailPage;
+// export default Directions;

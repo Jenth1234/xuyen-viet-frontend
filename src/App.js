@@ -1,7 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext'; // Đảm bảo đường dẫn chính xác
-
+import {NotificationProvider} from './context/NotificationContext'
 import Home from './pages/Home';
 import MapPage from './pages/MapPage';
 import Settings from './pages/Settings';
@@ -26,15 +26,20 @@ import AttractionDetail from './components/explore/AttractionDetail';
 import ExploreAll from './pages/ExpoloreAll'; // Đảm bảo import đúng
 import Vote from './pages/Vote'; // Đảm bảo import đúng
 import '@fortawesome/fontawesome-free/css/all.min.css';
-
+import SuggestItinerary from './pages/SuggestItinerary'
+import SuggestPlace from './components/itinerary/SuggestPlace'
 
 const App = () => {
   return (
     <AuthProvider>
+      <NotificationProvider>
       <Router basename="/xuyen-viet-frontend">
+      
         <NavBar className="" />
-        <div className="container mt-20 mx-auto p-4"> 
+        <div className="container max-h-screen mt-20 mx-auto p-4"> 
             <Routes>
+        
+
           <Route path="/" element={<Navigate to="/home" />} />
           <Route path="/home" element={<Home />} />
           <Route path="/mapPage" element={<PrivateRoute element={<MapPage />} />} />
@@ -42,6 +47,7 @@ const App = () => {
           <Route path="/profile" element={<Profile />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+
 
          
           <Route path="/explore/explorePage" element={<ExplorePage />} />
@@ -58,11 +64,14 @@ const App = () => {
           <Route path="/review-booking-flight" element={<PrivateRoute element={<ReviewBooking />} />} />
 
           <Route path="/itinerary/:itineraryId" element={<PrivateRoute element={<DetailItinerary />} />} />
+          <Route path="/suggest-itinerary" element={<PrivateRoute element={<SuggestItinerary />} />} />
+          <Route path="/suggest-place" element={<PrivateRoute element={<SuggestPlace />} />} />
           <Route path="/itinerary/:itineraryId/update" element={<PrivateRoute element={<UpdateDetailItinerary />} />} />
         </Routes>
         </div>
       
       </Router>
+      </NotificationProvider>
     </AuthProvider>
   );
 };

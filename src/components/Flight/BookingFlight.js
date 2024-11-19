@@ -4,6 +4,28 @@ import internationalData from "../../data/international.json";
 import airData from "../../data/Flight.json";
 import { format, parse } from "date-fns";
 import { addPassengerInfo } from "../../api/ApiFlight";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faUser,
+  faUsers,
+  faPhone,
+  faEnvelope,
+  faInfoCircle,
+  faQuestionCircle,
+  faArrowRight,
+  faCalendar,
+  faPlane,
+  faTimes,
+  faSave,
+  faSuitcase,
+  faClock,
+  faLuggageCart,
+  faCircleDot,
+  faPlaneArrival,
+  faPlaneDeparture ,
+  faExchange,
+  faCheck,
+} from "@fortawesome/free-solid-svg-icons";
 import { vi } from "date-fns/locale";
 const BookingFlightForm = () => {
   const location = useLocation(); // Lấy thông tin location
@@ -146,18 +168,18 @@ const handleSubmit = async (e) => {
       contactInfo: contactInfo,
       passengerInfo: passengerInfo,
       flightInfo: {
-          flightNumber: flightNumber, // Số hiệu chuyến bay
-          airlineCode: airlineCode,   // Mã hãng bay
-          departure: departureAirport,  // Mã sân bay đi
-          arrival: arrivalAirport,      // Mã sân bay đến
-          departureTime: formattedDepartureTime, // Thời gian khởi hành
-          arrivalTime: formattedArrivalTime,     // Thời gian đến
-          totalPrice: totalPrice,      // Tổng giá chuyến bay
-          flightDuration: formattedFlightDuration // Thời gian bay
+          flightNumber: flightNumber, 
+          airlineCode: airlineCode,  
+          departure: departureAirport,  
+          arrival: arrivalAirport,      
+          departureTime: formattedDepartureTime, 
+          arrivalTime: formattedArrivalTime,   
+          totalPrice: totalPrice,      
+          flightDuration: formattedFlightDuration 
       }
   };
 
-  // Ghi log dữ liệu trước khi chuyển trang
+ 
   console.log("Dữ liệu hành khách và chuyến bay đã được chuẩn bị:", dataToSend);
 
   // Chuyển hướng đến trang xác nhận mà không gửi đến server
@@ -180,340 +202,392 @@ const handleSubmit = async (e) => {
   return (
     <div className="flex space-x-8 mt-32">
       {/* Cột 1: Form Thông tin liên hệ và Hành khách */}
-      <form className="ml-32 w-2/3 p-6" onSubmit={handleSubmit}>
-        <h2 className="text-xl font-bold mb-4">Thông tin liên hệ</h2>
-        <form
-          onSubmit={handleSubmit}
-          className="flex space-x-8 p-6 border border-gray-300 rounded"
-        >
-          {/* Cột 1 */}
-          <div className="w-1/2">
-            <div className="mb-4">
-              <label className="block mb-1" htmlFor="lastName">
-                Họ (vd: Nguyen)*
-              </label>
-              <input
-                type="text"
-                id="FIRST_NAME"
-                name="FIRST_NAME"
-                placeholder="như trên CMND (không dấu)"
-                value={contactInfo.FIRST_NAME}
-                onChange={handleContactChange}
-                required
-                className="border rounded px-3 py-2 w-full"
-              />
-            </div>
-            <div className="mb-4">
-              <label className="block mb-1" htmlFor="mobile">
-                Điện thoại di động*
-              </label>
-              <input
-                type="tel"
-                id="MOBILE"
-                name="MOBILE"
-                placeholder="VD: +84 901234567"
-                value={contactInfo.MOBILE}
-                onChange={handleContactChange}
-                required
-                className="border rounded px-3 py-2 w-full"
-              />
-            </div>
-          </div>
-
-          {/* Cột 2 */}
-          <div className="w-1/2">
-            <div className="mb-4">
-              <label className="block mb-1" htmlFor="MIDDLE_NAME">
-                Tên Đệm & Tên (vd: Trung Thong)*
-              </label>
-              <input
-                type="text"
-                id="MIDDLE_NAME"
-                name="MIDDLE_NAME"
-                placeholder="như trên CMND (không dấu)"
-                value={contactInfo.MIDDLE_NAME}
-                onChange={handleContactChange}
-                required
-                className="border rounded px-3 py-2 w-full"
-              />
-            </div>
-            <div className="mb-4">
-              <label className="block mb-1" htmlFor="email">
-                Email*
-              </label>
-              <input
-                type="email"
-                id="EMAIL"
-                name="EMAIL"
-                placeholder="VD: email@example.com"
-                value={contactInfo.EMAIL}
-                onChange={handleContactChange}
-                required
-                className="border rounded px-3 py-2 w-full"
-              />
-            </div>
-          </div>
-        </form>
-
-        <h2>Thông tin hành khách</h2>
-
-        <form
-          onSubmit={handleSubmit}
-          className="p-6 border border-gray-300 rounded"
-        >
-          <div className="bg-amber-100 p-4">
-            <p className="mb-4 ">
-              Vui lòng chú ý cho những điều sau đây: Bạn phải nhập chính xác tên
-              như trong CCCD của mình.
-            </p>
-            <button
-              type="button"
-              onClick={openModal} // Gọi hàm mở modal
-              className=" bg-blue-200 py-2 px-4 rounded"
-            >
-              Hướng dẫn nhập tên
-            </button>
-          </div>
-          <h2 className="text-xl font-bold mb-4">
-            Thông tin liên hệ (nhận vé/phiếu thanh toán)
-          </h2>
-          {passengerInfo.map((passenger, index) => (
-  <div className="flex" key={index}>
-    {/* Cột 1 */}
-    <div className="w-1/2 pr-4">
-      <div className="mb-4">
-        <label className="block mb-1" htmlFor={`TITLE-${index}`}>
-          Danh xưng*
-        </label>
-        <select
-          id={`TITLE-${index}`} // Cung cấp id duy nhất
-          name="TITLE"
-          value={passenger.TITLE} // Sử dụng passenger.TITLE
-          onChange={(e) => handlePassengerChange(index, e)} // Gọi với index
-          className="border rounded px-3 py-2 w-full"
-        >
-          <option value="">Chọn danh xưng</option>
-          <option value="Mr">Ông</option>
-          <option value="Ms">Bà</option>
-        </select>
+      <form onSubmit={handleSubmit} className="w-2/3 space-y-6 p-6">
+  {/* Contact Information */}
+  <div className="bg-white rounded-xl shadow-sm p-6">
+    <div className="flex items-center space-x-3 mb-6">
+      <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+        <FontAwesomeIcon icon={faUser} className="text-blue-600" />
       </div>
-      <div className="mb-4">
-        <label className="block mb-1" htmlFor={`FIRST_NAME-${index}`}>
+      <h2 className="text-xl font-bold text-gray-800">Thông tin liên hệ</h2>
+    </div>
+
+    <div className="grid grid-cols-2 gap-6">
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">
           Họ (vd: Nguyen)*
         </label>
-        <input
-          type="text"
-          id={`FIRST_NAME-${index}`} // Cung cấp id duy nhất
-          name="FIRST_NAME"
-          placeholder="như trên CMND (không dấu)"
-          value={passenger.FIRST_NAME} // Sử dụng passenger.FIRST_NAME
-          onChange={(e) => handlePassengerChange(index, e)} // Gọi với index
-          required
-          className="border rounded px-3 py-2 w-full"
-        />
+        <div className="relative">
+          <FontAwesomeIcon 
+            icon={faUser} 
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" 
+          />
+          <input
+            type="text"
+            id="FIRST_NAME"
+            name="FIRST_NAME"
+            placeholder="như trên CMND (không dấu)"
+            value={contactInfo.FIRST_NAME}
+            onChange={handleContactChange}
+            required
+            className="pl-10 w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+          />
+        </div>
       </div>
-      <div className="mb-4">
-        <label className="block mb-1" htmlFor={`DATE_OF_BIRTH-${index}`}>
-          Ngày sinh*
-        </label>
-        <input
-          type="date"
-          id={`DATE_OF_BIRTH-${index}`} // Cung cấp id duy nhất
-          name="DATE_OF_BIRTH"
-          value={passenger.DATE_OF_BIRTH} // Sử dụng passenger.DATE_OF_BIRTH
-          onChange={(e) => handlePassengerChange(index, e)} // Gọi với index
-          required
-          className="border rounded px-3 py-2 w-full"
-        />
-      </div>
-    </div>
-    {/* Cột 2 */}
-    <div className="w-1/2 pl-4">
-      <div className="mb-4 opacity-0">
-        <label className="block mb-1" htmlFor={`middleName-${index}`}>
-          null
-        </label>
-        <input
-          type="text"
-          placeholder=""
-          value={contactInfo.middleName} // Chắc chắn rằng bạn đang xử lý đúng trường này
-          onChange={handlePassengerChange}
-          required
-          className="border rounded px-3 py-2 w-full"
-        />
-      </div>
-      <div className="mb-4">
-        <label className="block mb-1" htmlFor={`MIDDLE_NAME-${index}`}>
+
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">
           Tên Đệm & Tên (vd: Trung Thong)*
         </label>
-        <input
-          type="text"
-          id={`MIDDLE_NAME-${index}`} // Cung cấp id duy nhất
-          name="MIDDLE_NAME"
-          placeholder="như trên CMND (không dấu)"
-          value={passenger.MIDDLE_NAME} // Sử dụng passenger.MIDDLE_NAME
-          onChange={(e) => handlePassengerChange(index, e)} // Gọi với index
-          required
-          className="border rounded px-3 py-2 w-full"
-        />
-      </div>
-      <div className="mb-4">
-        <label className="block mb-1" htmlFor={`NATIONALITY-${index}`}>
-          Quốc tịch*
-        </label>
-        <select
-          id={`NATIONALITY-${index}`} // Cung cấp id duy nhất
-          name="NATIONALITY"
-          value={passenger.NATIONALITY} // Sử dụng passenger.NATIONALITY
-          onChange={(e) => handlePassengerChange(index, e)} // Gọi với index
-          required
-          className="border rounded px-3 py-2 w-full"
-        >
-          <option value="">Chọn quốc tịch</option>
-          {internationalData.international.map((country) => (
-            <option key={country.code} value={country.code}>
-              {country.name}
-            </option>
-          ))}
-        </select>
-      </div>
-    </div>
-  </div>
-))}
-
-
-          {/* <button
-            type="submit"
-            className="bg-blue-500 text-white px-4 py-2 rounded"
-          >
-            Lưu
-          </button> */}
-        </form>
-
-        <button
-          type="submit"
-          className="bg-blue-500 text-white px-4 py-2 rounded mt-5"
-        >
-          Tiếp tục
-        </button>
-      </form>
-
-      {/* Cột 2: Thông tin chuyến bay */}
-      <div className="w-1/2 m-20 p-6 bg-white rounded-lg shadow-md">
-        <div className="w-full border-gray-300">
-          <h1 className="text-2xl font-bold mb-4 text-center w-1/2 ">
-            Thông tin chuyến bay
-          </h1>
-          <p className="text-lg mb-2 text-gray-700">
-            {departureProvince}
-            <span className="mx-2 text-xl">→</span>
-            {arrivalProvince}
-          </p>
-          <p className="flex items-center mb-2">
-            {airlineInfo ? (
-              <span className="flex items-center">
-                <img
-                  src={airlineInfo.logo}
-                  alt={airlineInfo.name}
-                  className="w-8 h-8 mr-2"
-                />
-                {airlineInfo.name}
-              </span>
-            ) : (
-              "Hãng hàng không không tồn tại"
-            )}
-          </p>
-          <div>
-          <div className="mt-2 flex text-gray-600  items-center pr-5 mr-5">
-  <div className="flex flex-col items-center">
-
-    <span className="mt-2">{departureAirport}</span>
-  </div>
-
-  <div className="text-center mx-2 flex flex-col items-center">
-    <div className="font-semibold text-gray-700 mb-1">{formattedFlightDuration}</div>
-    <div className="flex items-center justify-center my-2 w-full">
-      <span className="flex items-center justify-center h-2 w-2 bg-blue-300 rounded-full"></span>
-      <hr className="flex-1 border-t border-gray-300 mx-2 w-3/5" />
-      <span className="flex items-center justify-center h-2 w-2 bg-blue-300 rounded-full"></span>
-    </div>
-    <div className="text-gray-500">
-      {formattedFlightDuration > 1 ? "Dừng chuyển" : "Thẳng"}
-    </div>
-  </div>
-
-  <div className="flex flex-col items-center">
-   
-    <span className="mt-2">{arrivalAirport}</span>
-  </div>
-</div>
-
-          </div>
-          <p className="mb-2">
-            <span className="font-semibold">Thời gian bay:</span>{" "}
-            {formattedDepartureTime}
-          </p>
-          {/* <p className="mb-2">
-            <span className="font-semibold">Giờ đến:</span>{" "}
-            {formattedArrivalTime}
-          </p> */}
-          {/* <p className="mb-2">
-            <span className="font-semibold">Thời gian bay:</span>{" "}
-            {formattedFlightDuration}
-          </p> */}
-          {/* <p className="text-lg font-bold">
-            Tổng chi phí chuyến bay:{" "}
-            {(totalPrice * 21000).toLocaleString("vi-VN")} VND
-          </p> */}
+        <div className="relative">
+          <FontAwesomeIcon 
+            icon={faUser} 
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" 
+          />
+          <input
+            type="text"
+            id="MIDDLE_NAME"
+            name="MIDDLE_NAME"
+            placeholder="như trên CMND (không dấu)"
+            value={contactInfo.MIDDLE_NAME}
+            onChange={handleContactChange}
+            required
+            className="pl-10 w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+          />
         </div>
+      </div>
 
-        {isModalOpen && (
-          <div className="fixed inset-0  bg-opacity-10 flex justify-center items-center z-50">
-            <div className="bg-white p-4 rounded shadow-lg max-w-lg w-full absolute top-28 right-5">
-              <div className="flex">
-                {/* Cột bên trái */}
-                <div className="w-1/2 pr-2">
-                  <img
-                    src="https://res.cloudinary.com/dbdl1bznw/image/upload/v1730366980/cccd_wramn4.jpg"
-                    alt="Hình ảnh CCCD"
-                    className="w-32 h-auto rounded" 
-                  />
-                  <p className="mt-2 text-xs">
-                    {" "}
-         
-                    Họ: <strong>Nguyen</strong>
-                  </p>
-                  <p className="mt-1 text-xs">
-                    Tên Đệm & Tên: <strong>Trung Thong</strong>
-                  </p>
-                </div>
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Điện thoại di động*
+        </label>
+        <div className="relative">
+          <FontAwesomeIcon 
+            icon={faPhone} 
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" 
+          />
+          <input
+            type="tel"
+            id="MOBILE"
+            name="MOBILE"
+            placeholder="VD: +84 901234567"
+            value={contactInfo.MOBILE}
+            onChange={handleContactChange}
+            required
+            className="pl-10 w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+          />
+        </div>
+      </div>
 
-                {/* Cột bên phải */}
-                <div className="w-1/2 pl-2">
-                  <h2 className="text-sm font-bold mb-2">Hướng dẫn nhập tên</h2>
-                  <p className="text-xs">
-                    {" "}
-                    {/* Giảm kích cỡ chữ cho mô tả */}
-                    Đảm bảo rằng tên của hành khách được nhập chính xác như trên
-                    ID do chính phủ cấp. Hãy làm theo ví dụ này:
-                  </p>
-                  <p className="font-semibold mt-1 text-xs">
-                    Nội dung bạn nhập vào trường tên phải là:
-                  </p>
-                  <button
-                    onClick={closeModal}
-                    className="mt-2 bg-blue-500 text-white px-3 py-1 rounded text-xs"
-                  >
-                    {" "}
-         
-                    Đóng
-                  </button>
-                </div>
-              </div>
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Email*
+        </label>
+        <div className="relative">
+          <FontAwesomeIcon 
+            icon={faEnvelope} 
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" 
+          />
+          <input
+            type="email"
+            id="EMAIL"
+            name="EMAIL"
+            placeholder="VD: email@example.com"
+            value={contactInfo.EMAIL}
+            onChange={handleContactChange}
+            required
+            className="pl-10 w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+          />
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {/* Passenger Information */}
+  <div className="bg-white rounded-xl shadow-sm p-6">
+    <div className="flex items-center space-x-3 mb-6">
+      <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+        <FontAwesomeIcon icon={faUsers} className="text-blue-600" />
+      </div>
+      <h2 className="text-xl font-bold text-gray-800">Thông tin hành khách</h2>
+    </div>
+
+    {/* Warning Box */}
+    <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6">
+      <div className="flex items-start space-x-3">
+        <FontAwesomeIcon icon={faInfoCircle} className="text-amber-500 mt-1" />
+        <div>
+          <p className="text-sm text-amber-700 mb-2">
+            Vui lòng nhập chính xác tên như trong CCCD của mình.
+          </p>
+          <button
+            type="button"
+            onClick={openModal}
+            className="text-sm bg-amber-100 hover:bg-amber-200 text-amber-700 py-2 px-4 rounded-lg transition-colors duration-200 flex items-center"
+          >
+            <FontAwesomeIcon icon={faQuestionCircle} className="mr-2" />
+            Hướng dẫn nhập tên
+          </button>
+        </div>
+      </div>
+    </div>
+
+    {/* Passenger Forms */}
+    {passengerInfo.map((passenger, index) => (
+      <div key={index} className="border border-gray-200 rounded-lg p-6 mb-6 hover:border-blue-300 transition-colors duration-200">
+        <h3 className="text-lg font-medium text-gray-800 mb-4 flex items-center">
+          <FontAwesomeIcon icon={faUser} className="text-blue-500 mr-2" />
+          Hành khách {index + 1}
+        </h3>
+        
+        <div className="grid grid-cols-2 gap-6">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Danh xưng*
+            </label>
+            <select
+              id={`TITLE-${index}`}
+              name="TITLE"
+              value={passenger.TITLE}
+              onChange={(e) => handlePassengerChange(index, e)}
+              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
+              <option value="">Chọn danh xưng</option>
+              <option value="Mr">Ông</option>
+              <option value="Ms">Bà</option>
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Họ (vd: Nguyen)*
+            </label>
+            <input
+              type="text"
+              id={`FIRST_NAME-${index}`}
+              name="FIRST_NAME"
+              placeholder="như trên CMND (không dấu)"
+              value={passenger.FIRST_NAME}
+              onChange={(e) => handlePassengerChange(index, e)}
+              required
+              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Tên Đệm & Tên (vd: Trung Thong)*
+            </label>
+            <input
+              type="text"
+              id={`MIDDLE_NAME-${index}`}
+              name="MIDDLE_NAME"
+              placeholder="như trên CMND (không dấu)"
+              value={passenger.MIDDLE_NAME}
+              onChange={(e) => handlePassengerChange(index, e)}
+              required
+              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Ngày sinh*
+            </label>
+            <div className="relative">
+              <FontAwesomeIcon 
+                icon={faCalendar} 
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" 
+              />
+              <input
+                type="date"
+                id={`DATE_OF_BIRTH-${index}`}
+                name="DATE_OF_BIRTH"
+                value={passenger.DATE_OF_BIRTH}
+                onChange={(e) => handlePassengerChange(index, e)}
+                required
+                className="pl-10 w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
             </div>
           </div>
-        )}
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Quốc tịch*
+            </label>
+            <select
+              id={`NATIONALITY-${index}`}
+              name="NATIONALITY"
+              value={passenger.NATIONALITY}
+              onChange={(e) => handlePassengerChange(index, e)}
+              required
+              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
+              <option value="">Chọn quốc tịch</option>
+              {internationalData.international.map((country) => (
+                <option key={country.code} value={country.code}>
+                  {country.name}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
       </div>
+    ))}
+  </div>
+
+  {/* Submit Button */}
+  <button
+    type="submit"
+    className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-6 rounded-lg 
+      transition-colors duration-200 flex items-center justify-center space-x-2"
+  >
+    <span>Tiếp tục</span>
+    <FontAwesomeIcon icon={faArrowRight} />
+  </button>
+</form>
+
+      {/* Cột 2: Thông tin chuyến bay */}
+      <div className="w-1/3">
+  <div className="bg-white rounded-xl shadow-lg p-6 sticky top-6 border border-gray-100">
+    {/* Header with Gradient */}
+    <div className="flex items-center space-x-3 mb-6 pb-4 border-b border-gray-100">
+      <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full flex items-center justify-center">
+        <FontAwesomeIcon icon={faPlane} className="text-white text-lg" />
+      </div>
+      <h2 className="text-xl font-bold bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent">
+        Thông tin chuyến bay
+      </h2>
+    </div>
+
+    {/* Flight Route with Enhanced Design */}
+    <div className="mb-8">
+      <div className="flex items-center justify-between p-4 bg-blue-50 rounded-lg">
+        <div className="text-lg font-semibold text-gray-800">{departureProvince}</div>
+        <div className="px-4">
+          <FontAwesomeIcon icon={faArrowRight} className="text-blue-500" />
+        </div>
+        <div className="text-lg font-semibold text-gray-800">{arrivalProvince}</div>
+      </div>
+
+      {/* Airline Info with Better Spacing */}
+      {airlineInfo && (
+        <div className="flex items-center space-x-4 mt-4 p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+          <img
+            src={airlineInfo.logo}
+            alt={airlineInfo.name}
+            className="w-12 h-12 object-contain"
+          />
+          <div>
+            <p className="font-semibold text-gray-800">{airlineInfo.name}</p>
+            <p className="text-sm text-gray-600">
+              {formattedFlightDuration > 1 ? (
+                <span className="flex items-center">
+                  <FontAwesomeIcon icon={faExchange} className="mr-2 text-orange-500" />
+                  Chuyến bay có điểm dừng
+                </span>
+              ) : (
+                <span className="flex items-center">
+                  <FontAwesomeIcon icon={faCheck} className="mr-2 text-green-500" />
+                  Chuyến bay thẳng
+                </span>
+              )}
+            </p>
+          </div>
+        </div>
+      )}
+    </div>
+
+    {/* Flight Timeline with Animation */}
+    <div className="bg-gradient-to-r from-blue-50 to-white p-6 rounded-xl mb-8">
+      <div className="flex items-center justify-between">
+        {/* Departure Section */}
+        <div className="text-center relative">
+        <div className="text-2xl font-bold text-gray-800 mb-2">
+  {new Date(departureTime).toLocaleTimeString('vi-VN', {
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false
+  })}
+</div>
+          <div className="space-y-1">
+            <div className="text-base font-semibold text-blue-600">{departureAirport}</div>
+            <div className="text-sm text-gray-500">
+              {new Date(departureTime).toLocaleDateString('vi-VN', {
+                day: 'numeric',
+                month: 'numeric'
+              })}
+            </div>
+          </div>
+        </div>
+
+        {/* Animated Flight Path */}
+        <div className="flex-1 px-8 relative">
+          <div className="absolute w-full top-1/2 border-t-2 border-blue-200 border-dashed"></div>
+          <div className="absolute w-full top-1/2 flex justify-center -mt-3">
+            <div className="bg-white p-2 rounded-full shadow-md transform hover:scale-110 transition-transform">
+              <FontAwesomeIcon 
+                icon={faPlane} 
+                className="text-blue-500 transform -rotate-45 animate-pulse" 
+              />
+            </div>
+          </div>
+          <div className="absolute w-full -bottom-8 flex justify-center">
+            <span className="bg-blue-100 px-4 py-1.5 rounded-full text-sm font-medium text-blue-700 flex items-center shadow-sm">
+              <FontAwesomeIcon icon={faClock} className="mr-2" />
+              {formattedFlightDuration}
+            </span>
+          </div>
+        </div>
+
+        {/* Arrival Section */}
+        <div className="text-center relative">
+        <div className="text-2xl font-bold text-gray-800 mb-2">
+  {new Date(arrivalTime).toLocaleTimeString('vi-VN', {
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false
+  })}
+</div>
+          <div className="space-y-1">
+            <div className="text-base font-semibold text-blue-600">{arrivalAirport}</div>
+            <div className="text-sm text-gray-500">
+              {new Date(arrivalTime).toLocaleDateString('vi-VN', {
+                day: 'numeric',
+                month: 'numeric'
+              })}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {/* Flight Details with Icons */}
+    <div className="space-y-4 mb-8">
+      <div className="flex items-center p-3 bg-gray-50 rounded-lg">
+        <FontAwesomeIcon icon={faSuitcase} className="text-blue-500 w-5" />
+        <span className="ml-3 text-gray-700">Hành lý xách tay: 7kg</span>
+      </div>
+      <div className="flex items-center p-3 bg-gray-50 rounded-lg">
+        <FontAwesomeIcon icon={faLuggageCart} className="text-blue-500 w-5" />
+        <span className="ml-3 text-gray-700">Hành lý ký gửi: 23kg</span>
+      </div>
+    </div>
+
+    {/* Price Summary with Enhanced Design */}
+    <div className="mt-6 pt-6 border-t border-gray-200">
+      <div className="flex justify-between items-center">
+        <span className="text-gray-600">Tổng tiền</span>
+        <div className="text-right">
+          <span className="block text-2xl font-bold text-blue-600">
+            {(totalPrice * 21000).toLocaleString("vi-VN")} VND
+          </span>
+          <span className="text-sm text-gray-500">Đã bao gồm thuế và phí</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
     </div>
   );
 };
