@@ -1,8 +1,8 @@
 {
   "files": {
-    "main.css": "/xuyen-viet-frontend/static/css/main.b654e2de.css",
-    "main.js": "/xuyen-viet-frontend/static/js/main.1522c255.js",
-    "static/js/453.5fd139db.chunk.js": "/xuyen-viet-frontend/static/js/453.5fd139db.chunk.js",
+    "main.css": "/xuyen-viet-frontend/static/css/main.f3d71988.css",
+    "main.js": "/xuyen-viet-frontend/static/js/main.55305f59.js",
+    "static/js/453.f0cb9295.chunk.js": "/xuyen-viet-frontend/static/js/453.f0cb9295.chunk.js",
     "static/media/bg-vote.png": "/xuyen-viet-frontend/static/media/bg-vote.536513a90939d0ddb7a3.png",
     "static/media/fa-solid-900.ttf": "/xuyen-viet-frontend/static/media/fa-solid-900.07ed6d5fa32c1d54af0f.ttf",
     "static/media/fa-brands-400.ttf": "/xuyen-viet-frontend/static/media/fa-brands-400.0ff70dcbf135d859ebf3.ttf",
@@ -19,12 +19,12 @@
     "static/media/slick.ttf": "/xuyen-viet-frontend/static/media/slick.c94f7671dcc99dce43e2.ttf",
     "static/media/slick.woff": "/xuyen-viet-frontend/static/media/slick.295183786cd8a1389865.woff",
     "index.html": "/xuyen-viet-frontend/index.html",
-    "main.b654e2de.css.map": "/xuyen-viet-frontend/static/css/main.b654e2de.css.map",
-    "main.1522c255.js.map": "/xuyen-viet-frontend/static/js/main.1522c255.js.map",
-    "453.5fd139db.chunk.js.map": "/xuyen-viet-frontend/static/js/453.5fd139db.chunk.js.map"
+    "main.f3d71988.css.map": "/xuyen-viet-frontend/static/css/main.f3d71988.css.map",
+    "main.55305f59.js.map": "/xuyen-viet-frontend/static/js/main.55305f59.js.map",
+    "453.f0cb9295.chunk.js.map": "/xuyen-viet-frontend/static/js/453.f0cb9295.chunk.js.map"
   },
   "entrypoints": [
-    "static/css/main.b654e2de.css",
-    "static/js/main.1522c255.js"
+    "static/css/main.f3d71988.css",
+    "static/js/main.55305f59.js"
   ]
 }
