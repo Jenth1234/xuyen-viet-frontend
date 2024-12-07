@@ -5,12 +5,6 @@ import Footer from '../components/Footer'
 const ExplorePage = () => {
   return (
     <>
-  
-
-
-    
-
-    
       <Explore /> 
 
       <Footer/>

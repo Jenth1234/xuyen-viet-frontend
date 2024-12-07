@@ -31,24 +31,24 @@ export const createVote = async (voteData) => {
 };
 
 export const searchFlights = async (origin, destination, departureDate) => {
-    try {
-      const token = localStorage.getItem('token');
-      const response = await apiClient.get('/flight/search-flights', {
-        params: {
-          origin,
-          destination,
-          departureDate
-        },
-        headers: {
-          'Authorization': token ? `Bearer ${token}` : ''
-        }
-      });
-      return response.data;
-    } catch (error) {
-      console.error('Error searching flights:', error.response?.data || error.message);
-      throw error;
-    }
-  };
+  try {
+    const token = localStorage.getItem('token');
+    const response = await apiClient.get('/flight/search-flights', {
+      params: {
+        origin,
+        destination,
+        departureDate
+      },
+      headers: {
+        'Authorization': token ? `Bearer ${token}` : ''
+      }
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error searching flights:', error.response?.data || error.message);
+    throw error;
+  }
+};
 
   export const addPassengerInfo = async (data) => {
     try {

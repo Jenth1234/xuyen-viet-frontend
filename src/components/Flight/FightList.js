@@ -16,10 +16,10 @@ import {
   faChevronDown,
   faTag,
   faExclamationCircle,
-  faFilter,         // Thêm faFilter
-  faCheck,          // Thêm nếu bạn dùng checkbox
-  faUndo,           // Thêm nếu bạn có nút reset
-  faMapMarkerAlt    // Thêm nếu bạn hiển thị location
+  faFilter,         
+  faCheck,          
+  faUndo,           
+  faMapMarkerAlt    
 } from "@fortawesome/free-solid-svg-icons";
 const FlightResults = () => {
   const location = useLocation();
@@ -43,7 +43,7 @@ console.log(flights)
     // Log thông tin itinerary và segment
     console.log('Itinerary:', itinerary);
     console.log('Segment:', segment);
-  const conversionRate = 21000;   
+  const conversionRate = 10000;   
 
   const prices = flights.map(flight => {
   
@@ -366,7 +366,7 @@ console.log(flights)
                 
                 <div className="text-right">
                   <p className="text-2xl font-bold text-blue-600">
-                    {formatCurrency(price.total * 21000)} VND
+                    {formatCurrency(price.total * 10000)} VND
                   </p>
                   <p className="text-sm text-gray-500">/ Khách</p>
                 </div>

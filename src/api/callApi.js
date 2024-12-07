@@ -91,8 +91,9 @@ export const getUserInfo = async () => {
    * @param {Object} userInfo - Thông tin người dùng cần chỉnh sửa
    * @returns {Promise} - Trả về promise từ axios
    */
-  export const editUserInfo = async (token, userInfo) => {
+  export const editUserInfo = async (userInfo) => {
     try {
+      const token = localStorage.getItem('token');
       const response = await axios.post(`${API_URL}/user/edit`, userInfo, {
         headers: {
           'Authorization': `Bearer ${token}`
@@ -141,23 +142,7 @@ export const getUserInfo = async () => {
     }
   };
 
-  /**
-   * Gửi yêu cầu POST để đăng ký người dùng
-   * @param {string} USERNAME - Tên đăng nhập
-   * @param {string} PASSWORD - Mật khẩu
-   * @param {string} EMAIL - Email
-   * @returns {Promise} - Trả về promise từ axios
-   */
-  /**
-   * Gửi yêu cầu POST để đăng ký người dùng
-   * @param {string} USERNAME - Tên đăng nhập
-   * @param {string} PASSWORD - Mật khẩu
-   * @param {string} GENDER - Giới tính
-   * @param {string} ADDRESS - Địa chỉ
-   * @param {string} FULLNAME - Họ và tên
-   * @param {string} EMAIL - Email
-   * @returns {Promise} - Trả về promise từ axios
-   */
+
   export const registerUser = async (USERNAME, PASSWORD, GENDER, ADDRESS, FULLNAME, EMAIL) => {
     try {
       const response = await axios.post(`${API_URL}/user/register`, {
@@ -176,38 +161,7 @@ export const getUserInfo = async () => {
   };
 
   /**
-   * Gửi yêu cầu GET để tìm kiếm thông tin chuyến bay
-   * @param {string} origin - Mã sân bay xuất phát (IATA code)
-   * @param {string} destination - Mã sân bay đến (IATA code)
-   * @param {string} departureDate - Ngày khởi hành (định dạng YYYY-MM-DD)
-   * @returns {Promise} - Trả về promise từ axios
-   */
-  export const searchFlights = async (origin, destination, departureDate) => {
-    try {
-      const token = localStorage.getItem('token');
-      const response = await axios.get(`${API_URL}/flight/search-flights`, {
-        params: {
-          origin,
-          destination,
-          departureDate
-        },
-        headers: {
-          'Authorization': token ? `Bearer ${token}` : ''
-        }
-      });
-      return response.data;
-    } catch (error) {
-      console.error('Error searching flights:', error.response?.data || error.message);
-      throw error;
-    }
-  };
-  /**
-   * Gửi yêu cầu POST để tải lên ảnh
-   * @param {File} photo - Tập tin ảnh để tải lên
-   * @param {string} province - Tên tỉnh liên quan đến ảnh
-   * @param {string} token - Token xác thực
-   * @returns {Promise} - Trả về promise từ axios
-   */
+
   export const getUserUploads = async (photo, province, token) => {
     try {
       // Tạo đối tượng FormData để gửi ảnh và tên tỉnh
@@ -251,7 +205,8 @@ export const getUserInfo = async () => {
  * @returns {Promise} - Trả về promise từ axios
  */
 
-  export const uploadPhoto = async (photo, province,date,token) => {
+  export const uploadPhoto = async (photo, province,date) => {
+    const token = localStorage.getItem('token');
     try {
       const formData = new FormData();
       formData.append('photo', photo);
@@ -481,7 +436,13 @@ export const createItinerary = async (itineraryData, userId) => {
 // Hàm gửi yêu cầu tạo hoạt động mới
 export const createActivity = async (activityData) => {
   try {
+     // Kiểm tra dữ liệu trước khi gửi
+     if (!activityData || !activityData.itineraryId || !activityData.activity.LOCATION) {
+      throw new Error('Thiếu thông tin bắt buộc cho hoạt động');
+    }
     const response = await fetch(`${API_URL}/activity/create`, {
+      ...activityData,
+      __v: activityData.version ,
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -498,6 +459,65 @@ export const createActivity = async (activityData) => {
   } catch (error) {
     console.error('Lỗi kết nối API:', error);
     throw error; // Đẩy lỗi lên để có thể xử lý ở nơi gọi hàm này
+  }
+};
+export const createBulkActivities = async (data) => {
+  try {
+    // Log dữ liệu gửi đi để debug
+    console.log('Sending bulk activities data:', data);
+
+    // Kiểm tra dữ liệu đầu vào
+    if (!data.itineraryId) {
+      throw new Error('Thiếu itineraryId');
+    }
+
+    if (!Array.isArray(data.activities) || data.activities.length === 0) {
+      throw new Error('Danh sách hoạt động không hợp lệ');
+    }
+
+    // Chuẩn bị dữ liệu gửi đi
+    const requestData = {
+      itineraryId: data.itineraryId,
+      activities: data.activities.map(activity => ({
+        LOCATION: activity.LOCATION,
+        DESCRIPTION: activity.DESCRIPTION || '',
+        STARTTIME: activity.STARTTIME,
+        ENDTIME: activity.ENDTIME,
+        COST: parseFloat(activity.COST) || 0,
+        DATE: activity.DATE
+      }))
+    };
+
+    // Gọi API
+    const response = await axios.post(
+      `${API_URL}/activity/bulk`,
+      requestData,
+      {
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      }
+    );
+
+    // Log response để debug
+    console.log('Bulk create response:', response.data);
+
+    return response.data;
+  } catch (error) {
+    // Log chi tiết lỗi
+    console.error('Error in createBulkActivities:', {
+      message: error.message,
+      response: error.response?.data,
+      status: error.response?.status,
+      data: error.response?.data
+    });
+
+    // Ném lỗi với thông tin chi tiết
+    throw {
+      message: error.response?.data?.message || error.message,
+      status: error.response?.status,
+      details: error.response?.data
+    };
   }
 };
 export const getItinerary = async (itineraryId) => {

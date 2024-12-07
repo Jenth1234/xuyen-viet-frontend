@@ -151,7 +151,7 @@ const AttractionList = () => {
   <div className="flex overflow-x-auto gap-6 mb-12 pb-4 scrollbar-hide">
     {[
       { icon: '🏖️', title: 'Bãi Biển', type: 'BEACHES' },
-      { icon: '☕', title: 'Quán Cà Phê', type: 'CAFÉ' },
+      { icon: '☕', title: 'Quán Cà Phê', type: 'CAFES' },
       { icon: '🏛️', title: 'Điểm Tham Quan', type: 'ATTRACTION' },
       { icon: '🏺', title: 'Di Tích Văn Hóa', type: 'CULTURAL' },
       { icon: '🎭', title: 'Lễ Hội', type: 'FESTIVAL' }
@@ -169,8 +169,8 @@ const AttractionList = () => {
   {/* Content Sections */}
   {[
     { title: 'Bãi Biển', data: province.BEACHES, type: 'BEACHES', icon: '🏖️' },
-    { title: 'Quán Cà Phê', data: province.CAFES, type: 'CAFÉ', icon: '☕' },
-    { title: 'Điểm Tham Quan', data: province.ATTRACTIONS, type: 'ATTRACTION', icon: '🏛️' },
+    { title: 'Quán Cà Phê', data: province.CAFES, type: 'CAFES', icon: '☕' },
+    { title: 'Điểm Tham Quan', data: province.ATTRACTIONS, type: 'ATTRACTIONS', icon: '🏛️' },
     { title: 'Di Tích Văn Hóa', data: province.CULTURAL, type: 'CULTURAL', icon: '🏺' },
     { title: 'Lễ Hội', data: province.FESTIVAL, type: 'FESTIVAL', icon: '🎭' }
   ].map((section, sectionIndex) => (

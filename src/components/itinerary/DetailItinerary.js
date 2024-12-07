@@ -3,12 +3,14 @@ import { useLocation, useParams } from "react-router-dom";
 import ActivityModal from "./modal/ActivityModal";
 import UpdateActivity from "./modal/UpdateActivityModal";
 import UpdateItineraryModal from "./modal/UpdateItineraryModal"; // update
-import { getItinerary, updateActivity } from "../../api/callApi";
+import { getItinerary, updateActivity,createActivity,createBulkActivities } from "../../api/callApi";
 import { getPlaceById } from "../../api/ApiPlace";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 import Test from "./test";
+
 import {
+  faRoute,
   faInfoCircle,
   faCalendarAlt,
   faDollarSign,
@@ -33,6 +35,8 @@ import {
   faPlaneDeparture,
   
 } from "@fortawesome/free-solid-svg-icons";
+import MapAside from './MapAside';
+import { toast } from 'react-toastify'; 
 import bgItinerary from "../../style/img/lienkhuong2.jpg";
 import html2canvas from "html2canvas";
 import { getInvoiceByUser } from "../../api/ApiInvoice";
@@ -67,6 +71,11 @@ const DetailPage = () => {
 
   const [days, setDays] = useState(0);
   const [places, setPlaces] = useState([]);
+  const [pendingChanges, setPendingChanges] = useState({
+    newActivities: [], // Các hoạt động mới chưa lưu
+    updatedActivities: [], // Các hoạt động đã chỉnh sửa
+    deletedActivities: [] // Các hoạt động đã xóa
+  });
   const [selectedPlace, setSelectedPlace] = useState(null); // Trạng thái lưu địa điểm đã chọn
   const [invoices, setInvoices] = useState([]);
   const [activitiesState, setActivitiesState] = useState(activities);
@@ -86,80 +95,200 @@ const DetailPage = () => {
   const itineraryRef = useRef(); // Tạo ref để tham chiếu đến phần tử cần chụp
   const [routes, setRoutes] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [isMapOpen, setIsMapOpen] = useState(false);
+const [processedPlaces, setProcessedPlaces] = useState([]);
+
+  
   const [error, setError] = useState(null);
-  const [dayRoutes, setDayRoutes] = useState(routes); // Lưu trữ các lộ trình của ngày
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await getItinerary(itineraryId);
-        const activitiesData = response.ACTIVITIES || [];
-        if (response) {
-          setItinerary(response);
-          setStartDate(response.START_DATE);
-          setEndDate(response.END_DATE);
-          const startDateObj = new Date(response.START_DATE);
-          const endDateObj = new Date(response.END_DATE);
-          const dayCount =
-            Math.ceil((endDateObj - startDateObj) / (1000 * 60 * 60 * 24)) + 1;
+const [isApplyingRoute, setIsApplyingRoute] = useState(false);
 
-          setDateArray(
-            Array.from({ length: dayCount }, (_, index) => {
-              const currentDate = new Date(startDateObj);
-              currentDate.setDate(currentDate.getDate() + index);
-              return currentDate.toISOString().split("T")[0];
-            })
-          );
+  
+// 1. Effect cho việc fetch dữ liệu chính
+const [dayRoutes, setDayRoutes] = useState(routes); // Lưu trữ các lộ trình của ngày
+useEffect(() => {
+  const fetchData = async () => {
+    try {
+      const response = await getItinerary(itineraryId);
+      const activitiesData = response.ACTIVITIES || [];
+      if (response) {
+        setItinerary(response);
+        setStartDate(response.START_DATE);
+        setEndDate(response.END_DATE);
+        
+        const startDateObj = new Date(response.START_DATE);
+        const endDateObj = new Date(response.END_DATE);
+        const dayCount = Math.ceil((endDateObj - startDateObj) / (1000 * 60 * 60 * 24)) + 1;
 
-          // Khởi tạo mảng hoạt động cho mỗi ngày
-          const activitiesByDay = Array.from({ length: dayCount }, () => []);
+        // Khởi tạo dateArray
+        const dates = Array.from({ length: dayCount }, (_, index) => {
+          const currentDate = new Date(startDateObj);
+          currentDate.setDate(currentDate.getDate() + index);
+          return currentDate.toISOString().split("T")[0];
+        });
+        setDateArray(dates);
 
-          // Phân loại hoạt động vào ngày tương ứng dựa trên STARTTIME
-          activitiesData.forEach((activity) => {
-            const startTime = new Date(activity.STARTTIME);
-            const dayIndex = Math.floor(
-              (startTime - startDateObj) / (1000 * 60 * 60 * 24)
-            );
-            if (dayIndex >= 0 && dayIndex < dayCount) {
-              activitiesByDay[dayIndex].push(activity);
-            }
-          });
+        // Khởi tạo activitiesState với mảng rỗng cho mỗi ngày
+        const initialActivitiesState = Array(dayCount).fill().map(() => []);
 
-          setActivitiesState(activitiesByDay);
-          setDays(dayCount);
-          setTotalCost(calculateTotalCost(activitiesByDay));
-          if (fromNotification && itineraryRef.current) {
-            itineraryRef.current.scrollIntoView({ behavior: 'smooth' });
+        // Phân loại hoạt động vào ngày tương ứng
+        activitiesData.forEach((activity) => {
+          const activityDate = new Date(activity.STARTTIME);
+          const dayIndex = Math.floor((activityDate - startDateObj) / (1000 * 60 * 60 * 24));
+          if (dayIndex >= 0 && dayIndex < dayCount) {
+            initialActivitiesState[dayIndex].push(activity);
           }
-        } else {
-          console.error("No data found.");
-        }
-      } catch (error) {
-        console.error("API call error:", error);
+        });
+
+        setActivitiesState(initialActivitiesState);
+        setDays(dayCount);
+        setTotalCost(calculateTotalCost(initialActivitiesState));
       }
-    };
-    if (itineraryId) {
-      fetchData();
+    } catch (error) {
+      console.error("API call error:", error);
+      toast.error("Có lỗi xảy ra khi tải dữ liệu!");
     }
+  };
 
-
-  }, [itineraryId,fromNotification]);
-
+  if (itineraryId) {
+    fetchData();
+  }
+}, [itineraryId]);
+  // 2. Effect cho việc fetch places
   useEffect(() => {
     const fetchPlaces = async () => {
       try {
-        // Fetch data cho các địa điểm bằng ID
+        setLoading(true);
+        console.log('Selected Places received:', selectedPlaces);
+  
+        if (!selectedPlaces || !Array.isArray(selectedPlaces)) {
+          console.log('No places to fetch or invalid data');
+          setPlaces([]);
+          return;
+        }
+  
+        const placeIds = selectedPlaces
+          .filter(place => place && (place.id || place._id))
+          .map(place => place.id || place._id);
+  
+        console.log('Place IDs to fetch:', placeIds);
+  
         const placesData = await Promise.all(
-          selectedPlaces.map((id) => getPlaceById(id))
+          placeIds.map(async (id) => {
+            try {
+              const response = await getPlaceById(id);
+          
+              const placeData = response.data;
+              console.log('Place data received:', placeData);
+              return placeData;
+            } catch (error) {
+              console.error(`Error fetching place with ID ${id}:`, error);
+              return null;
+            }
+          })
         );
-        // Trích xuất dữ liệu từ phản hồi và cập nhật vào state
-        setPlaces(placesData.map((place) => place.data)); // Dữ liệu địa điểm nằm trong `data`
+  
+        // Transform và validate data
+        const validPlaces = placesData
+          .filter(place => place !== null)
+          .map(place => ({
+            _id: place._id,
+            NAME: place.NAME || 'Unnamed Place',
+            ADDRESS: place.ADDRESS || 'No Address',
+            DESCRIPTION: place.DESCRIPTIONPLACE || '',
+            CATEGORY: place.CATEGORY || 'Unknown',
+            IMAGES: {
+              NORMAL: place.IMAGES?.NORMAL || [],
+              PANORAMA: place.IMAGES?.PANORAMA || []
+            }
+          }));
+  
+        console.log('Processed places:', validPlaces);
+        setPlaces(validPlaces);
+  
       } catch (error) {
-        console.error("Error fetching places:", error);
+        console.error("Error in fetchPlaces:", error);
+        toast.error("Có lỗi khi tải dữ liệu địa điểm");
+      } finally {
+        setLoading(false);
       }
     };
-
-    fetchPlaces();
-  }, [selectedPlaces]); // Khi `selectedPlaces` thay đổi, sẽ gọi lại fetchPlaces
+  
+    if (selectedPlaces && selectedPlaces.length > 0) {
+      fetchPlaces();
+    }
+  }, [selectedPlaces]);
+  
+  // Render places
+  function renderPlaces() {
+    const placesList = document.createElement('ul');
+    placesList.className = 'grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6';
+  
+    if (places.length === 0) {
+      const emptyMessage = document.createElement('li');
+      emptyMessage.className = 'col-span-full text-center py-8 text-gray-500';
+      emptyMessage.textContent = 'Không có địa điểm nào.';
+      placesList.appendChild(emptyMessage);
+      return placesList;
+    }
+  
+    places.forEach((place, index) => {
+      const placeItem = document.createElement('li');
+      placeItem.className = 'cursor-pointer group rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300';
+      placeItem.onclick = () => handleAddPlaceToActivity(place);
+  
+      // Image container
+      const imageContainer = document.createElement('div');
+      imageContainer.className = 'relative';
+  
+      const image = document.createElement('img');
+      image.src = place.IMAGES?.NORMAL?.[0] || 'https://via.placeholder.com/300x200';
+      image.alt = place.NAME;
+      image.className = 'w-full h-48 object-cover group-hover:scale-110 transition-transform duration-500';
+      image.onerror = (e) => {
+        e.target.src = 'https://via.placeholder.com/300x200';
+      };
+  
+      // Content container
+      const contentContainer = document.createElement('div');
+      contentContainer.className = 'p-4 bg-white';
+  
+      const title = document.createElement('h4');
+      title.className = 'text-lg font-semibold text-gray-800 group-hover:text-blue-600 transition-colors';
+      title.textContent = place.NAME;
+  
+      const description = document.createElement('p');
+      description.className = 'text-sm text-gray-600 mt-2 line-clamp-2';
+      description.textContent = place.DESCRIPTION || '';
+  
+      // Append elements
+      imageContainer.appendChild(image);
+      contentContainer.appendChild(title);
+      if (place.DESCRIPTION) {
+        contentContainer.appendChild(description);
+      }
+  
+      placeItem.appendChild(imageContainer);
+      placeItem.appendChild(contentContainer);
+      placesList.appendChild(placeItem);
+    });
+  
+    return placesList;
+  }
+  
+  // Update DOM
+  const container = document.querySelector('#places-container');
+  if (container) {
+    container.innerHTML = ''; // Clear existing content
+    if (loading) {
+      const loadingDiv = document.createElement('div');
+      loadingDiv.className = 'text-center py-8';
+      loadingDiv.textContent = 'Đang tải dữ liệu...';
+      container.appendChild(loadingDiv);
+    } else {
+      container.appendChild(renderPlaces());
+    }
+  }
+  
   useEffect(() => {
     const fetchInvoices = async () => {
       try {
@@ -173,121 +302,169 @@ const DetailPage = () => {
     };
 
     fetchInvoices();
-  }, []); // Chạy lần đầu tiên khi component mount
+  }, []); 
+  // 4. Effect cho scroll khi từ notification
+  useEffect(() => {
+    if (fromNotification && itineraryRef.current) {
+      itineraryRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [fromNotification]);
 
   // Hàm tính toán lộ trình giữa các địa điểm
 
   console.log("du lieu",places);
+  const [startingPlaces, setStartingPlaces] = useState(Array(days).fill(null)); // Trạng thái cho địa điểm xuất phát mỗi ngày
+
+  // Hàm xử lý khi người dùng chọn địa điểm xuất phát
+  const handleSelectStartingPlace = (dayIndex, place) => {
+    const updatedStartingPlaces = [...startingPlaces];
+    updatedStartingPlaces[dayIndex] = place; // Cập nhật địa điểm xuất phát cho ngày tương ứng
+    setStartingPlaces(updatedStartingPlaces);
+  };
+
+  // Cập nhật hàm getRouteForDay để sử dụng địa điểm xuất phát
   const getRouteForDay = async (places) => {
-    // Lọc các địa điểm hợp lệ (có đủ các trường NAME, ADDRESS, URLADDRESS)
-    const validPlaces = [];
-    const invalidPlaces = [];
-
-    places.forEach((place, index) => {
-        if (place && place.NAME && place.ADDRESS && place.URLADDRESS) {
-            validPlaces.push(place);
-        } else {
-            let reason = "";
-            if (!place) {
-                reason = "Địa điểm bị null hoặc undefined";
-            } else {
-                if (!place.NAME) reason += "NAME bị thiếu. ";
-                if (!place.ADDRESS) reason += "ADDRESS bị thiếu. ";
-                if (!place.URLADDRESS) reason += "URLADDRESS bị thiếu. ";
-            }
-            invalidPlaces.push({ place, index, reason });
-        }
-    });
-
-    // Nếu không đủ địa điểm hợp lệ, bỏ qua
-    if (validPlaces.length < 2) {
-        return [];
+    console.log("Starting getRouteForDay with places:", places);
+    
+    // Kiểm tra nếu places không phải array hoặc rỗng
+    if (!Array.isArray(places) || places.length === 0) {
+      console.log("Places is not an array or empty");
+      return [];
     }
-
-    // Hàm gọi API Geocoding cho từng địa chỉ
+  
+    // Lọc và validate places
+    const validPlaces = places.filter(place => {
+      const isValid = place && 
+                      place.NAME && 
+                      place.ADDRESS 
+               
+      
+      if (!isValid) {
+        console.log("Invalid place:", place);
+        console.log("Missing fields:", {
+          name: !place?.NAME,
+          address: !place?.ADDRESS,
+        
+        });
+      }
+      
+      return isValid;
+    });
+  
+    console.log("Valid places after filtering:", validPlaces);
+  
+    if (validPlaces.length < 2) {
+      console.log("Not enough valid places");
+      return [];
+    }
+  
+    // Hàm lấy coordinates với error handling
     const getCoordinatesForAddress = async (address) => {
+      try {
+        console.log("Getting coordinates for address:", address);
         const geocodeUrl = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(address)}.json?access_token=${process.env.REACT_APP_MAPBOX_ACCESS_TOKEN}`;
         const geocodeResponse = await fetch(geocodeUrl);
         const geocodeData = await geocodeResponse.json();
-
-        if (!geocodeData || geocodeData.features.length === 0) {
-            return null;
+  
+        if (!geocodeData || !geocodeData.features || geocodeData.features.length === 0) {
+          console.log("No coordinates found for address:", address);
+          return null;
         }
-        return geocodeData.features[0].center.join(',');
+  
+        const coordinates = geocodeData.features[0].center.join(',');
+        console.log("Found coordinates:", coordinates);
+        return coordinates;
+      } catch (error) {
+        console.error("Error getting coordinates:", error);
+        return null;
+      }
     };
-
+  
     try {
-        // Nhóm các địa điểm theo từng ngày
-        const routeDetails = [];
-        let dayIndex = 1;
-        let lastPlace = null;
-
-        for (let i = 0; i < validPlaces.length - 1; i++) {
-            const fromPlace = validPlaces[i];
-            const toPlace = validPlaces[i + 1];
-            
-            if (!fromPlace || !toPlace) continue;
-
-            // Kiểm tra điều kiện toName không bắt đầu từ fromName
-            const fromName = fromPlace.NAME || "Không rõ";
-            const toName = toPlace.NAME || "Không rõ";
-            if (toName.startsWith(fromName)) {
-                continue; // Bỏ qua nếu toName bắt đầu từ fromName
-            }
-
-            const coordinates = await Promise.all([getCoordinatesForAddress(fromPlace.ADDRESS), getCoordinatesForAddress(toPlace.ADDRESS)]);
-            const validCoordinates = coordinates.filter(coord => coord !== null).join(';');
-
-            if (validCoordinates) {
-                const directionsUrl = `https://api.mapbox.com/directions/v5/mapbox/driving/${validCoordinates}?access_token=${process.env.REACT_APP_MAPBOX_ACCESS_TOKEN}&overview=full`;
-                const response = await fetch(directionsUrl);
-                const data = await response.json();
-
-                if (data.routes && data.routes.length > 0) {
-                    const route = data.routes[0];
-                    const getImagesForPlace = async (place) => {
-                        const images = place.IMAGES?.NORMAL || [];
-                        return images.length > 0 ? images[0] : "https://via.placeholder.com/150";
-                    };
-
-                    const fromImage = await getImagesForPlace(fromPlace);
-                    const toImage = await getImagesForPlace(toPlace);
-
-                    // Kiểm tra xem địa điểm đã có trong ngày trước chưa
-                    if (!lastPlace || (lastPlace.from !== fromName || lastPlace.to !== toName)) {
-                        // Thêm vào routeDetails
-                        routeDetails.push({
-                            from: fromName,
-                            to: toName,
-                            distance: (route.distance / 1000).toFixed(2),
-                            duration: (route.duration / 60).toFixed(2),
-                            fromImage,
-                            toImage,
-                            day: dayIndex,
-                        });
-
-                        lastPlace = { from: fromName, to: toName };
-
-                        // Tăng dayIndex khi chuyển sang ngày mới
-                        if (i + 2 < validPlaces.length) {
-                            dayIndex++;
-                        }
-                    }
-                }
-            }
+      const routeDetails = [];
+      let dayIndex = 1;
+  
+      // Process pairs of places
+      for (let i = 0; i < validPlaces.length - 1; i += 2) {
+        const fromPlace = startingPlaces[dayIndex - 1] || validPlaces[i]; // Nếu không có địa điểm xuất phát, sử dụng địa điểm đầu tiên
+        const toPlace = validPlaces[i + 1];
+        
+        console.log(`Processing pair ${i/2 + 1}:`, {
+          from: fromPlace.NAME,
+          to: toPlace.NAME
+        });
+  
+        // Get coordinates
+        const [fromCoords, toCoords] = await Promise.all([
+          getCoordinatesForAddress(fromPlace.ADDRESS),
+          getCoordinatesForAddress(toPlace.ADDRESS)
+        ]);
+  
+        if (!fromCoords || !toCoords) {
+          console.log("Missing coordinates for one or both places");
+          continue;
         }
-
-        // Loại bỏ các tuyến không hợp lệ (null) và sắp xếp theo ngày
-        const validRouteDetails = routeDetails.filter((route) => route !== null);
-
-        return validRouteDetails;
-    } catch (err) {
-        return [];
+  
+        // Get route from Mapbox
+        const directionsUrl = `https://api.mapbox.com/directions/v5/mapbox/driving/${fromCoords};${toCoords}?access_token=${process.env.REACT_APP_MAPBOX_ACCESS_TOKEN}&overview=full`;
+        const response = await fetch(directionsUrl);
+        const data = await response.json();
+  
+        if (!data.routes || data.routes.length === 0) {
+          console.log("No route found between places");
+          continue;
+        }
+  
+        const route = data.routes[0];
+        
+        // Get images
+        const fromImage = fromPlace.IMAGES?.NORMAL?.[0] || "https://via.placeholder.com/150";
+        const toImage = toPlace.IMAGES?.NORMAL?.[0] || "https://via.placeholder.com/150";
+  
+        // Add route details
+        routeDetails.push({
+          day: dayIndex,
+          date: new Date(startDate).toLocaleDateString('vi-VN', {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+          }),
+          route: [{
+            from: fromPlace.NAME,
+            to: toPlace.NAME,
+            distance: (route.distance / 1000).toFixed(2),
+            duration: (route.duration / 60).toFixed(0),
+            fromImage,
+            toImage
+          }]
+        });
+  
+        dayIndex++;
+      }
+  
+      console.log("Final route details:", routeDetails);
+      return routeDetails;
+  
+    } catch (error) {
+      console.error("Error in getRouteForDay:", error);
+      return [];
     }
-};
-
-
-
+  };
+  
+  // Sử dụng hàm
+  useEffect(() => {
+    const processRoutes = async () => {
+      if (places && places.length > 0) {
+        console.log("Processing routes for places:", places);
+        const routes = await getRouteForDay(places);
+        console.log("Generated routes:", routes);
+        setRoutes(routes);
+      }
+    };
+  
+    processRoutes();
+  }, [places, startDate]);
 
 console.log(routes)
   // Hàm tính lịch trình hợp lý cho mỗi ngày
@@ -295,43 +472,146 @@ console.log(routes)
     setLoading(true);
     const allRoutes = [];
   
-    // Kiểm tra nếu không có places hoặc places.length = 0
     if (!places || places.length === 0) {
       setRoutes([]);
       setLoading(false);
       return;
     }
   
-    // Chia thành nhóm mỗi ngày 2 địa điểm nhưng không liên kết với nhóm trước đó
-    for (let i = 0; i < places.length; i++) {
-      const dayPlaces = places.slice(i, i + 2);  // Lấy 2 địa điểm cho mỗi ngày
-      
-      // Kiểm tra nếu dayPlaces có đủ dữ liệu
-      if (dayPlaces.length > 0) {
-        // Tính toán lộ trình cho nhóm địa điểm
-        const routeDetails = await getRouteForDay(dayPlaces);
+    // Tính số ngày dựa trên số lượng địa điểm
+    const numberOfDays = Math.ceil(places.length / 2);
   
-        // Kiểm tra nếu có lộ trình hợp lệ
-        if (routeDetails && routeDetails.length > 0) {
+    // Chia thành các cặp địa điểm cho mỗi ngày
+    for (let i = 0; i < numberOfDays; i++) {
+      const startIndex = i * 2;
+      const dayPlaces = places.slice(startIndex, startIndex + 2);
+      const currentDate = dateArray[i];
+  
+      if (dayPlaces.length > 0) {
+        try {
+          const routeDetails = await getRouteForDay(dayPlaces);
+  
+          allRoutes.push({
+            day: i + 1, // Luôn bắt đầu từ 1
+            date: currentDate,
+            route: routeDetails,
+            activities: activitiesState[i] || []
+          });
+  
+        } catch (error) {
+          console.error(`Error calculating route for day ${i + 1}:`, error);
           allRoutes.push({
             day: i + 1,
-            route: routeDetails,
-            activities: activitiesState[i] || [], 
+            date: currentDate,
+            route: [],
+            activities: activitiesState[i] || []
           });
-        }
-  
-        // Đảm bảo không bị bỏ qua ngày cuối nếu chỉ có một địa điểm trong nhóm
-        if (dayPlaces.length === 1) {
-          i++; 
         }
       }
     }
   
-    setRoutes(allRoutes);
+    // Thêm các ngày còn lại không có lộ trình
+    dateArray.forEach((date, index) => {
+      if (!allRoutes.some(route => route.date === date)) {
+        allRoutes.push({
+          day: index + 1, // Luôn bắt đầu từ 1
+          date: date,
+          route: [],
+          activities: []
+        });
+      }
+    });
+  
+    // Sắp xếp lại routes theo số thứ tự ngày
+    const sortedRoutes = allRoutes.sort((a, b) => a.day - b.day);
+  
+    console.log("Final routes:", sortedRoutes);
+    setRoutes(sortedRoutes);
     setLoading(false);
   };
+  
+  
 
+// Hàm xử lý áp dụng lộ trình tự động
+// Thêm hàm xử lý áp dụng lộ trình
+const handleApplyRoute = async () => {
+  try {
+    setIsApplyingRoute(true);
+    
+    if (!places || places.length === 0) {
+      toast.warning('Không có địa điểm nào để áp dụng');
+      return;
+    }
 
+    // Tính toán số hoạt động mỗi ngày
+    const placesPerDay = Math.ceil(places.length / days);
+    
+    // Tạo mảng hoạt động mới cho mỗi ngày
+    const newActivities = Array.from({ length: days }, () => []);
+    const pendingActivities = []; // Mảng lưu các hoạt động mới cần thêm vào pendingChanges
+    
+    // Phân bổ các địa điểm vào các ngày
+    places.forEach((place, index) => {
+      const dayIndex = Math.floor(index / placesPerDay);
+      
+      if (dayIndex < days) {
+        const startTime = new Date(dateArray[dayIndex]);
+        startTime.setHours(9 + (index % placesPerDay) * 2, 0, 0);
+
+        // Tạo endTime (2 tiếng sau startTime)
+        const endTime = new Date(startTime);
+        endTime.setHours(endTime.getHours() + 2);
+
+        const newActivity = {
+          _id: `temp_${Date.now()}_${Math.random()}`, // Thêm ID tạm thời
+          NAME: place.NAME,
+          LOCATION: place.ADDRESS || place.LOCATION,
+          DESCRIPTION: place.DESCRIPTION || '',
+          STARTTIME: startTime.toISOString(),
+          ENDTIME: endTime.toISOString(),
+          COST: 0,
+          DATE: dateArray[dayIndex],
+          COORDINATES: place.URLADDRESS || place.coordinates,
+          IMAGES: place.IMAGES || [],
+          isTemp: true // Đánh dấu là hoạt động tạm thời
+        };
+
+        newActivities[dayIndex].push(newActivity);
+        
+        // Thêm vào mảng pendingActivities với dayIndex
+        pendingActivities.push({
+          ...newActivity,
+          dayIndex
+        });
+      }
+    });
+
+    // Cập nhật activitiesState
+    setActivitiesState(newActivities);
+    
+    // Cập nhật pendingChanges
+    setPendingChanges(prev => ({
+      ...prev,
+      newActivities: [...prev.newActivities, ...pendingActivities]
+    }));
+
+    // Cập nhật tổng chi phí
+    setTotalCost(calculateTotalCost(newActivities));
+    
+    console.log('New activities added:', pendingActivities);
+    console.log('Updated pendingChanges:', {
+      ...pendingChanges,
+      newActivities: [...pendingChanges.newActivities, ...pendingActivities]
+    });
+    
+    toast.success('Đã áp dụng lộ trình thành công! Nhớ bấm "Lưu" để lưu lại các thay đổi.');
+  } catch (error) {
+    console.error('Error applying route:', error);
+    toast.error('Có lỗi khi áp dụng lộ trình');
+  } finally {
+    setIsApplyingRoute(false);
+  }
+};
   // Hàm xử lý khi kéo và thả
   const handleOnDragEnd = (result) => {
     const { destination, source } = result;
@@ -361,7 +641,11 @@ console.log(routes)
   
     initializeRoutes();
   }, [places]);
-
+  useEffect(() => {
+    if (places && places.length > 0) {
+      console.log('Available places for route:', places);
+    }
+  }, [places]);
   if (loading) {
     return <div>Đang gợi ý lộ trình tối ưu cho bạn...</div>;
   }
@@ -369,21 +653,12 @@ console.log(routes)
   if (error) {
     return <div>{error}</div>;
   }
-
-  const handleSaveAndShare = (event) => {
-    event.preventDefault(); // Ngăn không cho form tự động refresh trang khi submit
-
-    console.log("1111");
-
-    // Lưu dữ liệu
-    const newItinerary = {
-      /* thông tin hoạt động */
-    };
-    handleSaveItinerary(newItinerary); // Giả sử bạn đã có hàm để lưu hoạt động
-
-    // Hiển thị hộp thoại xác nhận
-    setShowConfirmation(true);
+  const handlePlaceClick = (place) => {
+    setSelectedPlace(place);
+    setIsMapOpen(true);
   };
+
+
   const handleSaveItinerary = (itinerary) => {
     // Thực hiện lưu dữ liệu (ví dụ gọi API hoặc xử lý dữ liệu)
     console.log("Dữ liệu đã được lưu:", itinerary);
@@ -409,34 +684,96 @@ console.log(routes)
     dayRefs.current[index]?.scrollIntoView({ behavior: "smooth" });
   };
   // Mở modal để thêm hoạt động mới cho ngày cụ thể.
-  const handleAddActivity = (dayIndex) => {
-    const selectedDate = dateArray[dayIndex]; // Lấy ngày từ dateArray theo dayIndex
-    setSelectedDay(selectedDate); // Cập nhật ngày đã chọn (có thể là ngày tháng năm)
-    console.log("Opening modal for day:", selectedDate); // Kiểm tra ngày chọn
-    setIsModalOpen(true); // Mở modal
-  };
+ // Thêm hàm handleAddActivity và handleSaveActivity
+ const handleAddActivity = (dayIndex) => {
+  console.log("Opening modal for day:", dayIndex);
+  setCurrentDayIndex(dayIndex);
+  setSelectedDay(dateArray[dayIndex]);
+  setIsModalOpen(true);
+};
+
 
   const handleEditItinerary = () => {
     setIsItineraryEditing(true);
     setItinerary(itineraryId);
   };
   // Lưu hoạt động mới được thêm vào danh sách các hoạt động cho ngày cụ thể.
-  const handleSaveActivity = (newActivity) => {
-    setActivitiesState((prev) => {
-      const updatedActivities = [...prev];
-      if (!updatedActivities[currentDayIndex]) {
-        updatedActivities[currentDayIndex] = [];
+  const handleSaveAndShare = async () => {
+    console.log('=== Starting Save Process ===');
+    console.log('Pending changes:', pendingChanges);
+  
+    try {
+      toast.info('Đang lưu thay đổi...');
+  
+      // Lưu nhiều hoạt động cùng lúc
+      if (pendingChanges.newActivities.length > 0) {
+        // Chuẩn bị dữ liệu cho tất cả hoạt động
+        const activitiesData = {
+          itineraryId: itineraryId,
+          activities: pendingChanges.newActivities.map(activity => ({
+            LOCATION: activity.LOCATION,
+            DESCRIPTION: activity.DESCRIPTION || '',
+            STARTTIME: activity.STARTTIME,
+            ENDTIME: activity.ENDTIME,
+            COST: parseFloat(activity.COST) || 0,
+            DATE: activity.DATE
+          }))
+        };
+  
+        console.log('Sending bulk activities data:', activitiesData);
+  
+        try {
+          // Gọi API để lưu nhiều hoạt động cùng lúc
+          const response = await createBulkActivities(activitiesData);
+          console.log('Bulk activities created:', response);
+        } catch (error) {
+          console.error('Error creating bulk activities:', error);
+          throw error;
+        }
       }
-      updatedActivities[currentDayIndex].push(newActivity);
-      setTotalCost(calculateTotalCost(updatedActivities)); // Cập nhật tổng chi phí
-      return updatedActivities;
-    });
-    setIsModalOpen(false);
+  
+      // Refresh dữ liệu từ server
+      const updatedItinerary = await getItinerary(itineraryId);
+      
+      // Cập nhật state với dữ liệu mới
+      if (updatedItinerary && updatedItinerary.ACTIVITIES) {
+        const startDateObj = new Date(updatedItinerary.START_DATE);
+        const initialActivitiesState = Array(days).fill().map(() => []);
+        
+        updatedItinerary.ACTIVITIES.forEach((activity) => {
+          if (activity && activity.STARTTIME) {
+            const activityDate = new Date(activity.STARTTIME);
+            const dayIndex = Math.floor((activityDate - startDateObj) / (1000 * 60 * 60 * 24));
+            if (dayIndex >= 0 && dayIndex < days) {
+              initialActivitiesState[dayIndex].push(activity);
+            }
+          }
+        });
+        
+        setActivitiesState(initialActivitiesState);
+        setItinerary(updatedItinerary);
+        setTotalCost(calculateTotalCost(initialActivitiesState));
+      }
+  
+      // Reset pendingChanges
+      setPendingChanges({
+        newActivities: [],
+        updatedActivities: [],
+        deletedActivities: []
+      });
+  
+      toast.success('Đã lưu tất cả thay đổi thành công!');
+      console.log('=== Save Process Completed Successfully ===');
+  
+    } catch (error) {
+      console.error('Error saving changes:', error);
+      toast.error(`Có lỗi xảy ra khi lưu thay đổi: ${error.message}`);
+    }
   };
 
   // closeModal
   const closeModal = () => setIsModalOpen(false);
-  // Mở modal để chỉnh sửa một hoạt động hiện có
+  // Mở modal để chỉnh s���a một hoạt động hiện có
   const handleEditActivity = (activity, dayIndex) => {
     setCurrentActivity(activity);
     setCurrentDayIndex(dayIndex);
@@ -444,28 +781,45 @@ console.log(routes)
   };
 
   // Cập nhật hoạt động hiện tại với dữ liệu mới
-  const handleUpdate = async (updatedData) => {
-    try {
-      const updatedActivity = await updateActivity(
-        currentActivity._id,
-        updatedData
+  const handleUpdate = async (updatedActivity) => {
+    setActivitiesState(prevState => {
+      const newState = [...prevState];
+      const dayIndex = newState.findIndex(day => 
+        day.some(act => act._id === updatedActivity._id)
       );
-      setActivitiesState((prev) => {
-        const updatedActivities = [...prev];
-        const activityIndex = updatedActivities[currentDayIndex].findIndex(
-          (act) => act._id === currentActivity._id
+      
+      if (dayIndex !== -1) {
+        const activityIndex = newState[dayIndex].findIndex(
+          act => act._id === updatedActivity._id
         );
         if (activityIndex !== -1) {
-          updatedActivities[currentDayIndex][activityIndex] = updatedActivity; // Cập nhật hoạt động
-          setTotalCost(calculateTotalCost(updatedActivities)); // Cập nhật tổng chi phí
+          newState[dayIndex][activityIndex] = updatedActivity;
         }
-        return updatedActivities;
-      });
-      setIsEditing(false);
-    } catch (error) {
-      console.error("Error updating activity:", error);
-    }
+      }
+      return newState;
+    });
+
+    // Thêm vào danh sách thay đổi chờ xử lý
+    setPendingChanges(prev => [...prev, updatedActivity]);
   };
+    // Thêm hàm mới để xử lý submit tất cả thay đổi
+    const handleSubmitAllChanges = async () => {
+      try {
+        // Gọi API để cập nhật từng activity
+        for (const updatedActivity of pendingChanges) {
+          await updateActivity(updatedActivity._id, updatedActivity);
+        }
+        
+        // Xóa danh sách thay đổi chờ xử lý
+        setPendingChanges([]);
+        
+        // Hiển thị thông báo thành công
+        toast.success('Đã lưu tất cả thay đổi thành công!');
+      } catch (error) {
+        console.error('Error submitting changes:', error);
+        toast.error('Có lỗi xảy ra khi lưu thay đổi!');
+      }
+    };
 
   // Hàm mở modal khi chọn địa điểm
   const handleAddPlaceToActivity = (place) => {
@@ -501,75 +855,42 @@ console.log(routes)
       link.click();
     });
   };
+
+  const handleSaveActivity = (dayIndex, newActivity) => {
+    console.log("Saving activity for day:", dayIndex, newActivity);
+  
+    // Cập nhật activitiesState
+    setActivitiesState(prevState => {
+      const newState = [...prevState];
+      if (!Array.isArray(newState[dayIndex])) {
+        newState[dayIndex] = [];
+      }
+      newState[dayIndex] = [...newState[dayIndex], newActivity];
+      return newState;
+    });
+  
+    // Cập nhật pendingChanges
+    setPendingChanges(prev => ({
+      ...prev,
+      newActivities: [...prev.newActivities, { ...newActivity, dayIndex }]
+    }));
+  
+    // Cập nhật tổng chi phí
+    setTotalCost(prevCost => {
+      const newCost = parseInt(prevCost) + parseInt(newActivity.COST || 0);
+      return newCost.toString();
+    });
+  
+    setIsModalOpen(false);
+    toast.success('Đã thêm hoạt động mới! Nhớ bấm "Lưu" để lưu lại các thay đổi.');
+  };
+
   return (
     <div ref={itineraryRef} className="itinerary">
       <ProgressBar className="as" currentStep={currentStep} />
       {/* <Test/> */}
-      <div>
- 
-  <div className="grid grid-cols-3 gap-4">
-    {/* Sort days that have routes first */}
-    {routes
-      .sort((a, b) =>
-        a.route && a.route.length > 0 && !(b.route && b.route.length > 0)
-          ? -1
-          : 1
-      )
-      .map((dayRoute, dayIndex) => (
-        <div key={dayRoute.day} className="bg-white rounded-lg shadow-lg p-4">
-          <h2 className="text-xl font-semibold text-blue-600 mb-4 text-center">
-            Ngày {dayRoute.day}: {dateArray[dayIndex]}
-          </h2>
-          <div>
-            {/* Display route details */}
-            {dayRoute.route && dayRoute.route.length > 0 ? (
-              dayRoute.route.map((route, index) => (
-                <div
-                  key={`route-${dayIndex}-${index}`}
-                  className="route-item mb-4 p-4 bg-blue-50 rounded-lg border border-gray-200"
-                >
-                  {/* Display images and times for each place */}
-                  <div className="flex items-center mb-2">
-                    {route.fromImage && (
-                      <div className="flex items-center mb-2">
-                        <img
-                          src={route.fromImage}
-                          alt={route.from}
-                          className="w-16 h-16 object-cover rounded-md mr-2"
-                        />
-                        <p className="text-sm font-medium text-blue-600">
-                          Sáng: {route.from}
-                        </p>
-                      </div>
-                    )}
+      {/* trình gợi ý */}
 
-                    {route.toImage && (
-                      <div className="flex items-center mb-2">
-                        <img
-                          src={route.toImage}
-                          alt={route.to}
-                          className="w-16 h-16 object-cover rounded-md mr-2"
-                        />
-                        <p className="text-sm font-medium text-blue-600">
-                          - Chiều: {route.to}
-                        </p>
-                      </div>
-                    )}
-                  </div>
-
-                  <p className="text-sm text-gray-500">
-                    {route.distance} km, {route.duration} phút
-                  </p>
-                </div>
-              ))
-            ) : (
-              <p className="text-gray-500 text-sm">Chưa có lộ trình cho ngày này.</p>
-            )}
-          </div>
-        </div>
-      ))}
-  </div>
-</div>
 
 
 
@@ -760,49 +1081,126 @@ console.log(routes)
   </div>
 
   {/* Places Selection */}
-  <div className="bg-white rounded-xl shadow-lg p-6">
+  <div id="places-container" className=" bg-white rounded-xl shadow-lg p-6">
     <h3 className="text-xl font-bold mb-6 flex items-center text-gray-800">
       <FontAwesomeIcon icon={faMapMarkedAlt} className="mr-3 text-blue-600" />
       Chọn địa điểm
     </h3>
     
     <ul className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-      {places.length > 0 ? (
-        places.map((place, index) => (
-          <li
-            key={place._id || index}
-            onClick={() => handleAddPlaceToActivity(place)}
-            className="cursor-pointer group rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300"
-          >
-            <div className="relative">
-              <img
-                src={place.IMAGES.NORMAL[0]}
-                alt={place.NAME}
-                className="w-full h-48 object-cover group-hover:scale-110 transition-transform duration-500"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-            </div>
-            
-            <div className="p-4 bg-white">
-              <h4 className="text-lg font-semibold text-gray-800 group-hover:text-blue-600 transition-colors">
-                {place.NAME}
-              </h4>
-              {place.DESCRIPTION && (
-                <p className="text-sm text-gray-600 mt-2 line-clamp-2">
-                  {place.DESCRIPTION}
-                </p>
-              )}
-            </div>
-          </li>
-        ))
-      ) : (
-        <li className="col-span-full text-center py-8 text-gray-500">
-          Không có địa điểm nào.
-        </li>
-      )}
+    {places.length > 0 ? (
+    places.map((place, index) => (
+      <li
+        key={place._id || index}
+        onClick={() => handleAddPlaceToActivity(place)}
+        className="cursor-pointer group rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300"
+      >
+        <div className="relative">
+          <img
+            // Thêm kiểm tra điều kiện cho IMAGES và NORMAL
+            src={place.IMAGES?.NORMAL?.[0] || 'https://via.placeholder.com/300x200'}
+            alt={place.NAME || 'Place image'}
+            className="w-full h-48 object-cover group-hover:scale-110 transition-transform duration-500"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+        </div>
+        
+        <div className="p-4 bg-white">
+          <h4 className="text-lg font-semibold text-gray-800 group-hover:text-blue-600 transition-colors">
+            {place.NAME || 'Unnamed Place'}
+          </h4>
+          {place.DESCRIPTION && (
+            <p className="text-sm text-gray-600 mt-2 line-clamp-2">
+              {place.DESCRIPTION}
+            </p>
+          )}
+        </div>
+      </li>
+    ))
+  ) : (
+    <li className="col-span-full text-center py-8 text-gray-500">
+      Không có địa điểm nào.
+    </li>
+  )}
     </ul>
   </div>
+ {/* Phần lộ trình gợi ý */}
+ <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
+    <div className="flex justify-between items-center mb-4">
+      <h2 className="text-xl font-bold text-gray-800 flex items-center">
+        <FontAwesomeIcon icon={faRoute} className="mr-3 text-blue-600" />
+        Lộ Trình Gợi Ý
+      </h2>
+      <button
+        onClick={handleApplyRoute}
+        disabled={isApplyingRoute || !routes.some(day => day.route?.length > 0)}
+        className={`py-2 px-4 rounded-lg shadow-md transition-colors duration-200 flex items-center ${
+          isApplyingRoute || !routes.some(day => day.route?.length > 0)
+            ? 'bg-gray-400 cursor-not-allowed'
+            : 'bg-blue-600 hover:bg-blue-700 text-white'
+        }`}
+      >
+        <FontAwesomeIcon icon={faPlus} className="mr-2" />
+        {isApplyingRoute ? 'Đang áp dụng...' : 'Áp dụng lộ trình'}
+      </button>
+    </div>
 
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      {routes.map((dayRoute) => (
+        
+        <div key={dayRoute.day} className="bg-white rounded-lg shadow-lg p-4">
+          <h2 className="text-xl font-semibold text-blue-600 mb-4 text-center">
+            {dayRoute.date}
+          </h2>
+          <div>
+            {dayRoute.route && dayRoute.route.length > 0 ? (
+              dayRoute.route.map((route, index) => (
+                <div
+                  key={`route-${index}`}
+                  className="route-item mb-4 p-4 bg-blue-50 rounded-lg border border-gray-200"
+                >
+                  <div className="flex items-center mb-2">
+                    {route.fromImage && (
+                      <div className="flex items-center mb-2">
+                        <img
+                          src={route.fromImage}
+                          alt={route.from}
+                          className="w-16 h-16 object-cover rounded-md mr-2"
+                        />
+                        <p className="text-sm font-medium text-blue-600">
+                          Sáng: {route.from}
+                        </p>
+                      </div>
+                    )}
+
+                    {route.toImage && (
+                      <div className="flex items-center mb-2">
+                        <img
+                          src={route.toImage}
+                          alt={route.to}
+                          className="w-16 h-16 object-cover rounded-md mr-2"
+                        />
+                        <p className="text-sm font-medium text-blue-600">
+                          - Chiều: {route.to}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                  <p className="text-sm text-gray-500">
+                    {route.distance} km, {route.duration} phút
+                  </p>
+                </div>
+              ))
+            ) : (
+              <p className="text-gray-500 text-sm">
+                Chưa có lộ trình cho ngày này.
+              </p>
+            )}
+          </div>
+        </div>
+      ))}
+    </div>
+  </div>
   {/* Booking Suggestions */}
   <div className="grid grid-cols-2 gap-6">
     {/* Flight Booking */}
@@ -875,86 +1273,92 @@ console.log(routes)
 
   {/* Activities Timeline */}
   {Array.from({ length: days }).map((_, dayIndex) => (
-    <div
-      key={dayIndex}
-      ref={(el) => (dayRefs.current[dayIndex] = el)}
-      className="bg-white rounded-xl shadow-lg p-6"
-    >
-      <h2 className="text-2xl font-bold mb-6 flex items-center text-gray-800">
-        <FontAwesomeIcon icon={faCalendarDay} className="mr-3 text-blue-600" />
-        Ngày {dayIndex + 1}: {dateArray[dayIndex]}
-      </h2>
+  <div
+    key={dayIndex}
+    ref={(el) => (dayRefs.current[dayIndex] = el)}
+    className="bg-white rounded-xl shadow-lg p-6"
+  >
+    <h2 className="text-2xl font-bold mb-6 flex items-center text-gray-800">
+      <FontAwesomeIcon icon={faCalendarDay} className="mr-3 text-blue-600" />
+      Ngày {dayIndex + 1}: {dateArray[dayIndex]}
+    </h2>
 
-      <div className="space-y-6">
-        {activitiesState[dayIndex] && activitiesState[dayIndex].length > 0 ? (
-          activitiesState[dayIndex].map((activity, idx) => (
-            <div
-              key={activity._id || idx}
-              className="bg-gray-50 rounded-xl p-6 shadow-md hover:shadow-lg transition-shadow duration-200"
-            >
-              <div className="flex justify-between items-start">
-                <div className="flex items-start space-x-6">
-                  <div className="flex flex-col items-center">
-                    <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center">
-                      <FontAwesomeIcon icon={faClock} className="text-blue-600" />
-                    </div>
-                    <div className="mt-2 text-sm font-medium text-gray-600">
-                      {new Date(activity.STARTTIME).toLocaleTimeString([], {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}
-                    </div>
+    <div className="space-y-6">
+      {/* Kiểm tra và hiển thị activities */}
+      {activitiesState[dayIndex] && activitiesState[dayIndex].length > 0 ? (
+        activitiesState[dayIndex].map((activity, idx) => (
+          <div
+            key={activity._id || idx}
+            className="bg-gray-50 rounded-xl p-6 shadow-md hover:shadow-lg transition-shadow duration-200"
+          >
+            <div className="flex justify-between items-start">
+              <div className="flex items-start space-x-6">
+                <div className="flex flex-col items-center">
+                  <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center">
+                    <FontAwesomeIcon icon={faClock} className="text-blue-600" />
                   </div>
-
-                  <div className="flex-1">
-                    <h4 className="text-xl font-semibold text-gray-800 mb-2">
-                      {activity.NAME}
-                    </h4>
-                    <p className="flex items-center text-gray-600 mb-2">
-                      <FontAwesomeIcon icon={faMapMarkerAlt} className="mr-2" />
-                      {activity.LOCATION}
-                    </p>
-                    <p className="flex items-center text-gray-600">
-                      <FontAwesomeIcon icon={faInfoCircle} className="mr-2" />
-                      {activity.DESCRIPTION}
-                    </p>
+                  <div className="mt-2 text-sm font-medium text-gray-600">
+                    {new Date(activity.STARTTIME).toLocaleTimeString([], {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
                   </div>
                 </div>
 
-                <div className="flex flex-col items-end">
-                  <div className="text-lg font-bold text-blue-600">
-                    {new Intl.NumberFormat('vi-VN', {
-                      style: 'currency',
-                      currency: 'VND'
-                    }).format(activity.COST)}
-                  </div>
-                  <button
-                    onClick={() => handleEditActivity(activity._id)}
-                    className="mt-4 py-2 px-4 bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg shadow-md transition-colors duration-200 flex items-center"
-                  >
-                    <FontAwesomeIcon icon={faEdit} className="mr-2" />
-                    Chỉnh sửa
-                  </button>
+                <div className="flex-1">
+                  <h4 className="text-xl font-semibold text-gray-800 mb-2">
+                    {activity.NAME}
+                    {activity.isTemp && (
+                      <span className="ml-2 px-2 py-1 bg-yellow-100 text-yellow-800 text-xs rounded-full">
+                        Chưa lưu
+                      </span>
+                    )}
+                  </h4>
+                  <p className="flex items-center text-gray-600 mb-2">
+                    <FontAwesomeIcon icon={faMapMarkerAlt} className="mr-2" />
+                    {activity.LOCATION}
+                  </p>
+                  <p className="flex items-center text-gray-600">
+                    <FontAwesomeIcon icon={faInfoCircle} className="mr-2" />
+                    {activity.DESCRIPTION}
+                  </p>
                 </div>
               </div>
-            </div>
-          ))
-        ) : (
-          <p className="text-center text-gray-500 py-4">
-            Chưa có hoạt động nào cho ngày này
-          </p>
-        )}
 
-        <button
-          onClick={() => handleAddActivity(dayIndex)}
-          className="w-full py-3 px-4 bg-green-600 hover:bg-green-700 text-white rounded-lg shadow-md transition-colors duration-200 flex items-center justify-center"
-        >
-          <FontAwesomeIcon icon={faPlus} className="mr-2" />
-          Thêm hoạt động
-        </button>
-      </div>
+              <div className="flex flex-col items-end">
+                <div className="text-lg font-bold text-blue-600">
+                  {new Intl.NumberFormat('vi-VN', {
+                    style: 'currency',
+                    currency: 'VND'
+                  }).format(activity.COST)}
+                </div>
+                <button
+                  onClick={() => handleEditActivity(activity, dayIndex)}
+                  className="mt-4 py-2 px-4 bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg shadow-md transition-colors duration-200 flex items-center"
+                >
+                  <FontAwesomeIcon icon={faEdit} className="mr-2" />
+                  Chỉnh sửa
+                </button>
+              </div>
+            </div>
+          </div>
+        ))
+      ) : (
+        <p className="text-center text-gray-500 py-4">
+          Chưa có hoạt động nào cho ngày này
+        </p>
+      )}
+
+      <button
+        onClick={() => handleAddActivity(dayIndex)}
+        className="w-full py-3 px-4 bg-green-600 hover:bg-green-700 text-white rounded-lg shadow-md transition-colors duration-200 flex items-center justify-center"
+      >
+        <FontAwesomeIcon icon={faPlus} className="mr-2" />
+        Thêm hoạt động
+      </button>
     </div>
-  ))}
+  </div>
+))}
 
   {/* Action Buttons */}
   <div className="flex justify-end space-x-4">
@@ -966,15 +1370,23 @@ console.log(routes)
       Lưu ảnh
     </button>
     <button
-      type="submit"
-      onClick={handleSaveAndShare}
-      className="py-3 px-6 bg-blue-600 hover:bg-blue-700 text-white rounded-lg shadow-md transition-colors duration-200 flex items-center"
-    >
-      <FontAwesomeIcon icon={faSave} className="mr-2" />
-      Lưu
-    </button>
+  onClick={handleSaveAndShare}
+  className={`py-3 px-6 text-white rounded-lg shadow-md transition-colors duration-200 flex items-center ${
+    pendingChanges.newActivities.length > 0 
+      ? 'bg-blue-600 hover:bg-blue-700'
+      : 'bg-gray-400 cursor-not-allowed'
+  }`}
+  disabled={pendingChanges.newActivities.length === 0}
+>
+  <FontAwesomeIcon icon={faSave} className="mr-2" />
+  {pendingChanges.newActivities.length > 0 
+    ? `Lưu thay đổi (${pendingChanges.newActivities.length})` 
+    : 'Lưu thay đổi'}
+</button>
   </div>
+  
 </div>
+
 
         {isItineraryEditing && (
           <UpdateItineraryModal
@@ -986,13 +1398,16 @@ console.log(routes)
         )}
 
         {isModalOpen && (
-          <ActivityModal
-            onClose={closeModal}
-            onSave={handleSaveActivity}
-            dayIndex={currentDayIndex} // Đảm bảo dayIndex được truyền
-            selectedDate={selectedDay} // Truyền selectedDate vào modal
-            place={selectedPlace} // Truyền địa điểm đã chọn, không phải danh sách places
-          />
+     
+           <ActivityModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          onSave={handleSaveActivity}
+          dayIndex={currentDayIndex}
+          activitiesState={activitiesState}
+          place={selectedPlace}
+          selectedDate={selectedDay}
+        />
         )}
 
         {isEditing && (

@@ -10,21 +10,21 @@ export const getShareableItems = async () => {
   }
 };
 
-export const getNotifications = async () => {
-  const token = localStorage.getItem('token'); // Lấy token từ localStorage
+// export const getNotifications = async () => {
+//   const token = localStorage.getItem('token'); // Lấy token từ localStorage
 
-  try {
-    const response = await apiClient.get('/itinerary/notifications', {
-      headers: {
-        'Content-Type': 'application/json',  // Đảm bảo Content-Type là JSON
-        'Authorization': `Bearer ${token}`,  // Thêm token vào header Authorization
-      }
-    });
+//   try {
+//     const response = await apiClient.get('/itinerary/notifications', {
+//       headers: {
+//         'Content-Type': 'application/json',  // Đảm bảo Content-Type là JSON
+//         'Authorization': `Bearer ${token}`,  // Thêm token vào header Authorization
+//       }
+//     });
 
-    return response.data; // Trả về dữ liệu thông báo
-  } catch (error) {
-    console.error("Error fetching notifications:", error);
-    throw error; // Ném lỗi để xử lý ở nơi gọi hàm
-  }
-};
+//     return response.data; // Trả về dữ liệu thông báo
+//   } catch (error) {
+//     console.error("Error fetching notifications:", error);
+//     throw error; // Ném lỗi để xử lý ở nơi gọi hàm
+//   }
+// };
 

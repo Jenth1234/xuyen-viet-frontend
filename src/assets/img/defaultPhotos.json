@@ -85,7 +85,7 @@
       "https://example.com/phu-yen-photo1.jpg"
     ],
     "Khánh Hòa": [
-      "https://example.com/khanh-hoa-photo1.jpg"
+      "https://res.cloudinary.com/dbdl1bznw/image/upload/v1733225118/download_xpr8ed.jpg"
     ],
     "Ninh Thuận": [
       "https://example.com/ninh-thuan-photo1.jpg"
@@ -109,7 +109,7 @@
       "https://example.com/long-an-photo1.jpg"
     ],
     "Tiền Giang": [
-      "https://example.com/tien-giang-photo1.jpg"
+      "https://res.cloudinary.com/dbdl1bznw/image/upload/v1733224965/licensed-image_b7obtx.jpg"
     ],
     "Bến Tre": [
       "https://example.com/ben-tre-photo1.jpg"
@@ -155,6 +155,9 @@
     ],
     "Hà Nội": [
       "https://example.com/ha-noi-photo1.jpg"
+    ],
+    "Nghệ An": [
+      "https://res.cloudinary.com/dbdl1bznw/image/upload/v1733225031/images_j4gydt.jpg"
     ]
   }
   

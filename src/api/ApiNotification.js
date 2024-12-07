@@ -4,7 +4,7 @@ export const getNotifications = async () => {
   const token = localStorage.getItem('token');
   
   try {
-    const response = await apiClient.get('/notification/', {
+    const response = await apiClient.get('/notification/notifications', {
       headers: {
         'Authorization': `Bearer ${token}`
       }
@@ -47,3 +47,18 @@ export const deleteNotification = async (notificationId) => {
     throw error;
   }
 };
+export const sendReviewNotification = async (reviewData) => {
+    const token = localStorage.getItem('token');
+    
+    try {
+      const response = await apiClient.post('/notification/send-review', reviewData, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      return response.data;
+    } catch (error) {
+      console.error("Error sending review notification:", error);
+      throw error;
+    }
+  };

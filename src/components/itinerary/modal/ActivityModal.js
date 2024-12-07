@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { createActivity } from '../../../api/callApi';
+// import { createActivity } from '../../../api/callApi';
+import { toast } from 'react-toastify';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faCalendarPlus,
@@ -36,10 +37,23 @@ const ActivityModal = ({ onClose, onSave, dayIndex, activitiesState, place, sele
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setActivity({
-      ...activity,
-      [name]: value,
-    });
+    
+    // Validate cho trường hợp cost
+    if (name === 'COST') {
+      const numValue = parseFloat(value);
+      if (numValue < 0) return; // Không cho phép giá trị âm
+    }
+  
+    // Validate cho trường hợp time
+    if (name === 'ENDTIME' && activity.STARTTIME && value <= activity.STARTTIME) {
+      toast.warning('Thời gian kết thúc phải sau thời gian bắt đầu!');
+      return;
+    }
+  
+    setActivity(prev => ({
+      ...prev,
+      [name]: value
+    }));
   };
 
   const formatDateTime = (time) => {
@@ -49,31 +63,47 @@ const ActivityModal = ({ onClose, onSave, dayIndex, activitiesState, place, sele
     return null;
   };
 
-  const handleSave = async () => {
+  const handleSave = () => {
+    // Kiểm tra các trường bắt buộc
+    if (!activity.NAME || !activity.STARTTIME || !activity.LOCATION) {
+      toast.error('Vui lòng điền đầy đủ thông tin bắt buộc!');
+      return;
+    }
+  
+    // Chuyển đổi COST từ string sang number
+    const cost = parseFloat(activity.COST) || 0;
+  
     const newActivity = {
-      activity: {
-        NAME: activity.NAME,
-        LOCATION: activity.LOCATION,
-        DESCRIPTION: activity.DESCRIPTION,
-        STARTTIME: formatDateTime(activity.STARTTIME),
-        ENDTIME: formatDateTime(activity.ENDTIME),
-        IMAGE: activity.IMAGE,
-        COST: activity.COST,
-        DATE: activity.DATE, // Include DATE in the activity object
-      },
-      itineraryId: itineraryId,
+      _id: 'temp_' + Date.now(),
+      NAME: activity.NAME,
+      LOCATION: activity.LOCATION,
+      DESCRIPTION: activity.DESCRIPTION || '',
+      STARTTIME: formatDateTime(activity.STARTTIME),
+      ENDTIME: formatDateTime(activity.ENDTIME),
+      IMAGE: activity.IMAGE,
+      COST: cost,
+      DATE: activity.DATE,
+      isTemp: true // Đánh dấu là hoạt động tạm thời
     };
-
+  
+    console.log('Saving new activity:', newActivity); // Debug log
+  
     try {
-      const response = await createActivity(newActivity);
-      console.log("Activity saved successfully:", response);
+      // Gọi onSave từ props để cập nhật state ở component cha
       onSave(dayIndex, newActivity);
+      toast.success('Đã thêm hoạt động mới!');
       onClose();
     } catch (error) {
-      console.error("Error saving activity:", error);
+      console.error('Error saving activity:', error);
+      toast.error('Có lỗi xảy ra khi thêm hoạt động!');
     }
   };
-
+// Thêm hàm validate thời gian
+const validateTime = (startTime, endTime) => {
+  if (!startTime) return false;
+  if (endTime && startTime >= endTime) return false;
+  return true;
+};
   return (
 <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex justify-center items-center z-50">
   <div className="bg-white rounded-2xl p-8 w-2/3 max-w-3xl shadow-2xl">
@@ -226,12 +256,17 @@ const ActivityModal = ({ onClose, onSave, dayIndex, activitiesState, place, sele
         Đóng
       </button>
       <button 
-        onClick={handleSave}
-        className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors duration-200 flex items-center"
-      >
-        <FontAwesomeIcon icon={faSave} className="mr-2" />
-        Lưu
-      </button>
+  onClick={handleSave}
+  disabled={!activity.NAME || !activity.STARTTIME || !activity.LOCATION}
+  className={`px-6 py-3 rounded-lg transition-colors duration-200 flex items-center ${
+    !activity.NAME || !activity.STARTTIME || !activity.LOCATION
+      ? 'bg-gray-400 cursor-not-allowed'
+      : 'bg-blue-600 hover:bg-blue-700 text-white'
+  }`}
+>
+  <FontAwesomeIcon icon={faSave} className="mr-2" />
+  Lưu
+</button>
     </div>
   </div>
 </div>

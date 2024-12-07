@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getItineraryByUserId } from '../../api/callApi';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faEllipsisVertical, faCalendarAlt, faMapMarkerAlt, faClock } from '@fortawesome/free-solid-svg-icons';
+import { faEllipsisVertical, faCalendarAlt, faClock } from '@fortawesome/free-solid-svg-icons';
 
 const MyItinerary = () => {
   const [itineraries, setItineraries] = useState([]);
@@ -48,15 +48,7 @@ const MyItinerary = () => {
 
   return (
     <div className="bg-white rounded-xl shadow-sm p-8">
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold text-gray-800">Lịch Trình Của Bạn</h2>
-        <button
-          onClick={() => navigate('/create-itinerary')}
-          className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
-        >
-          + Tạo Lịch Trình Mới
-        </button>
-      </div>
+      <h2 className="text-2xl font-bold text-gray-800 mb-6">Lịch Trình Của Bạn</h2>
 
       {itineraries.length === 0 ? (
         <div className="text-center py-12 bg-gray-50 rounded-lg">
@@ -66,15 +58,10 @@ const MyItinerary = () => {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {itineraries.map((itinerary) => (
-            <div
-              key={itinerary._id}
-              className="bg-white rounded-xl border border-gray-200 hover:shadow-md transition-shadow duration-300"
-            >
+            <div key={itinerary._id} className="bg-white rounded-xl border border-gray-200 hover:shadow-md transition-shadow duration-300">
               <div className="p-6">
                 <div className="flex justify-between items-start mb-4">
-                  <h3 className="text-lg font-semibold text-gray-800 line-clamp-2">
-                    {itinerary.NAME}
-                  </h3>
+                  <h3 className="text-lg font-semibold text-gray-800 line-clamp-2">{itinerary.NAME}</h3>
                   <div className="relative">
                     <button
                       onClick={() => setShowOptions(showOptions === itinerary._id ? null : itinerary._id)}
@@ -82,21 +69,10 @@ const MyItinerary = () => {
                     >
                       <FontAwesomeIcon icon={faEllipsisVertical} className="h-5 w-5 text-gray-500" />
                     </button>
-                    
                     {showOptions === itinerary._id && (
                       <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-100 z-10">
-                        <button
-                          onClick={() => handleEdit(itinerary._id)}
-                          className="w-full px-4 py-3 text-left text-gray-700 hover:bg-gray-50 flex items-center space-x-2"
-                        >
-                          <span>Chỉnh sửa</span>
-                        </button>
-                        <button
-                          onClick={() => handleDelete(itinerary._id)}
-                          className="w-full px-4 py-3 text-left text-red-600 hover:bg-red-50 flex items-center space-x-2"
-                        >
-                          <span>Xóa lịch trình</span>
-                        </button>
+                        <button onClick={() => handleEdit(itinerary._id)} className="w-full px-4 py-3 text-left text-gray-700 hover:bg-gray-50">Chỉnh sửa</button>
+                        <button onClick={() => handleDelete(itinerary._id)} className="w-full px-4 py-3 text-left text-red-600 hover:bg-red-50">Xóa lịch trình</button>
                       </div>
                     )}
                   </div>
@@ -105,25 +81,15 @@ const MyItinerary = () => {
                 <div className="space-y-3">
                   <div className="flex items-center text-gray-600">
                     <FontAwesomeIcon icon={faCalendarAlt} className="h-4 w-4 mr-2" />
-                    <span className="text-sm">
-                      {new Date(itinerary.START_DATE).toLocaleDateString('vi-VN')} - {new Date(itinerary.END_DATE).toLocaleDateString('vi-VN')}
-                    </span>
+                    <span className="text-sm">{new Date(itinerary.START_DATE).toLocaleDateString('vi-VN')} - {new Date(itinerary.END_DATE).toLocaleDateString('vi-VN')}</span>
                   </div>
-                  
                   <div className="flex items-center text-gray-600">
                     <FontAwesomeIcon icon={faClock} className="h-4 w-4 mr-2" />
-                    <span className="text-sm">
-                      {Math.ceil((new Date(itinerary.END_DATE) - new Date(itinerary.START_DATE)) / (1000 * 60 * 60 * 24))} ngày
-                    </span>
+                    <span className="text-sm">{Math.ceil((new Date(itinerary.END_DATE) - new Date(itinerary.START_DATE)) / (1000 * 60 * 60 * 24))} ngày</span>
                   </div>
                 </div>
 
-                <button
-                  onClick={() => handleEdit(itinerary._id)}
-                  className="mt-4 w-full py-2 text-green-600 hover:text-green-700 text-sm font-medium transition-colors text-center border border-green-600 rounded-lg hover:bg-green-50"
-                >
-                  Xem chi tiết →
-                </button>
+                <button onClick={() => handleEdit(itinerary._id)} className="mt-4 w-full py-2 text-green-600 hover:text-green-700 text-sm font-medium transition-colors text-center border border-green-600 rounded-lg hover:bg-green-50">Xem chi tiết →</button>
               </div>
             </div>
           ))}

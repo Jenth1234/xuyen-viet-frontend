@@ -1,38 +1,55 @@
 import React, { useState, useEffect } from 'react';
 import { getAttractionSubField } from "../../api/callApi";
 import { useParams } from "react-router-dom";
-import { RatingFeedback, RatingModal } from './RatingFeedback';  // Import các component mới
+import { RatingFeedback, RatingModal } from './RatingFeedback';
+import { getPlaceById } from '../../api/ApiPlace';
 
-const ImageSlider = () => {
-  const { provinceName, type, provinceNameSub } = useParams();
+const AttractionDetail = () => {
+  const { provinceName, type, provinceNameSub, placeId } = useParams();
   const [attraction, setAttraction] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [userRating, setUserRating] = useState(0); // Trạng thái cho điểm đánh giá của người dùng
-  const [feedback, setFeedback] = useState(''); // Trạng thái cho phần ý kiến
-  const [isModalOpen, setIsModalOpen] = useState(false); // Quản lý modal
-  const [reviewType, setReviewType] = useState('all'); // Trạng thái để lọc loại ý kiến
-
-  const name = decodeURIComponent(provinceName);
-  const typeField = decodeURIComponent(type);
-  const field = decodeURIComponent(provinceNameSub);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [userRating, setUserRating] = useState(0);
+  const [feedback, setFeedback] = useState('');
+  const [reviewType, setReviewType] = useState('all');
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await getAttractionSubField(name, typeField, field);
-        if (response && response.data) {
-          setAttraction(response.data);
-          setUserRating(response.data.RATING || 0);
+        setLoading(true);
+        setError(null);
+        let response;
+        console.log("Fetching by ID:", placeId);
+
+        if (placeId) {
+          response = await getPlaceById(placeId);
+        } else if (provinceName && type && provinceNameSub) {
+          const name = decodeURIComponent(provinceName);
+          const typeField = decodeURIComponent(type);
+          const field = decodeURIComponent(provinceNameSub);
+          response = await getAttractionSubField(name, typeField, field);
         } else {
-          console.error("Không tìm thấy dữ liệu.");
+          throw new Error("Thiếu thông tin để tìm kiếm địa điểm");
+        }
+
+        if (response?.data) {
+          console.log("Response data:", response.data);
+          setAttraction(response.data);
+        } else {
+          throw new Error("Không tìm thấy dữ liệu địa điểm");
         }
       } catch (error) {
-        console.error("Lỗi khi gọi API:", error);
+        console.error('Error fetching attraction:', error);
+        setError(error.message || "Có lỗi xảy ra khi tải dữ liệu");
+      } finally {
+        setLoading(false);
       }
     };
 
     fetchData();
-  }, [name, typeField, field]);
+  }, [placeId, provinceName, type, provinceNameSub]);
 
   const nextSlide = () => {
     if (attraction?.IMAGES?.NORMAL) {
@@ -56,11 +73,9 @@ const ImageSlider = () => {
 
   const handleSubmitReview = (rating, feedback) => {
     console.log("Đánh giá:", rating, "Ý kiến:", feedback);
-    // Gửi đánh giá lên server (API call sẽ được thực hiện tại đây)
-    setIsModalOpen(false); // Đóng modal sau khi gửi
+    setIsModalOpen(false);
   };
 
-  // Hàm để hiển thị số sao đánh giá
   const renderStars = (rating) => {
     const stars = [];
     for (let i = 0; i < 5; i++) {
@@ -68,8 +83,8 @@ const ImageSlider = () => {
         <svg
           key={i}
           xmlns="http://www.w3.org/2000/svg"
-          fill={i < rating ? "yellow" : "none"}
-          stroke="currentColor"
+          fill={i < rating ? "#FFC107" : "none"}
+          stroke={i < rating ? "#FFC107" : "#CBD5E0"}
           viewBox="0 0 24 24"
           className="w-5 h-5"
         >
@@ -84,81 +99,85 @@ const ImageSlider = () => {
     return stars;
   };
 
-  if (!attraction || !attraction.IMAGES || !attraction.IMAGES.NORMAL.length) {
-    return <div>Không có hình ảnh để hiển thị.</div>;
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      </div>
+    );
   }
 
-  const images = attraction.IMAGES.NORMAL;
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-red-600">Lỗi: {error}</div>
+      </div>
+    );
+  }
+
+  if (!attraction) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-gray-600">Không tìm thấy thông tin địa điểm.</div>
+      </div>
+    );
+  }
 
   const filteredReviews = attraction.REVIEWS?.filter((review) => {
     if (reviewType === 'positive') {
       return review.rating >= 3;
     } else if (reviewType === 'negative') {
       return review.rating < 3;
-    } else {
-      return true;
     }
-  });
+    return true;
+  }) || [];
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Hero Section */}
-      <div className="relative h-[500px]">
-        <div 
-          className="absolute inset-0 bg-cover bg-center"
-          style={{
-            backgroundImage: `url(${images[currentIndex]})`,
-          }}
-        >
-          <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px]"></div>
-        </div>
-  
-        {/* Image Slider */}
-        <div className="absolute inset-0 container mx-auto px-4 flex items-center">
-          <div className="relative w-full max-w-4xl mx-auto">
-            <div className="aspect-[16/9] rounded-2xl overflow-hidden shadow-2xl">
-              <div
-                className="flex transition-transform duration-500"
-                style={{ transform: `translateX(-${currentIndex * 100}%)` }}
+      {/* Hero Image Section */}
+      {attraction?.IMAGES?.NORMAL?.length > 0 ? (
+        <div className="relative h-[400px]">
+          {/* Main Image */}
+          <img
+            src={attraction.IMAGES.NORMAL[currentIndex]}
+            alt={attraction.NAME}
+            className="w-full h-full object-cover"
+          />
+          <div className="absolute inset-0 bg-black/30"></div>
+
+          {/* Navigation Arrows - Only show if more than 1 image */}
+          {attraction.IMAGES.NORMAL.length > 1 && (
+            <>
+              <button
+                onClick={prevSlide}
+                className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white p-2 rounded-full shadow-lg transition-all"
               >
-                {images.map((image, index) => (
-                  <div className="min-w-full" key={index}>
-                    <img
-                      src={image}
-                      alt={`Slide ${index + 1}`}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                ))}
+                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
+              </button>
+              <button
+                onClick={nextSlide}
+                className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white p-2 rounded-full shadow-lg transition-all"
+              >
+                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
+
+              {/* Image Counter */}
+              <div className="absolute bottom-4 right-4 bg-black/50 text-white px-3 py-1 rounded-full text-sm">
+                {currentIndex + 1} / {attraction.IMAGES.NORMAL.length}
               </div>
-            </div>
-  
-            {/* Navigation Buttons */}
-            <button
-              onClick={prevSlide}
-              className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white p-3 rounded-full shadow-lg transition-all hover:scale-110"
-            >
-              <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-              </svg>
-            </button>
-            <button
-              onClick={nextSlide}
-              className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white p-3 rounded-full shadow-lg transition-all hover:scale-110"
-            >
-              <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
-            </button>
-  
-            {/* Image Counter */}
-            <div className="absolute bottom-4 right-4 bg-black/50 text-white px-3 py-1 rounded-full text-sm">
-              {currentIndex + 1} / {images.length}
-            </div>
-          </div>
+            </>
+          )}
         </div>
-      </div>
-  
+      ) : (
+        <div className="h-[200px] bg-gray-200 flex items-center justify-center">
+          <p className="text-gray-500">Không có hình ảnh</p>
+        </div>
+      )}
+
       {/* Content Section */}
       <div className="container mx-auto px-4 -mt-20 relative z-10">
         <div className="bg-white rounded-2xl shadow-xl p-8 mb-8">
@@ -166,23 +185,23 @@ const ImageSlider = () => {
             {/* Main Content */}
             <div className="lg:col-span-2">
               <h1 className="text-4xl font-bold mb-4">{attraction.NAME}</h1>
-              
-              {/* Rating Overview */}
-              <div className="flex items-center gap-4 mb-6">
-                <div className="flex items-center gap-1">
-                  {renderStars(attraction.RATING)}
+
+              {/* Category */}
+              {attraction.CATEGORY && (
+                <div className="mb-4">
+                  <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm">
+                    {attraction.CATEGORY}
+                  </span>
                 </div>
-                <span className="text-2xl font-semibold">{attraction.RATING}/5</span>
-                <span className="text-gray-500">({filteredReviews?.length || 0} đánh giá)</span>
-              </div>
-  
+              )}
+
               {/* Description */}
               <div className="prose max-w-none mb-8">
                 <p className="text-gray-600 leading-relaxed">
-                  {attraction.DESCRIPTIONPLACE}
+                  {attraction.DESCRIPTIONPLACE || 'Chưa có mô tả chi tiết.'}
                 </p>
               </div>
-  
+
               {/* Location Info */}
               {attraction.URLADDRESS && (
                 <div className="bg-blue-50 rounded-xl p-6 mb-8">
@@ -193,18 +212,19 @@ const ImageSlider = () => {
                     </svg>
                     Địa chỉ
                   </h3>
+                  <p className="text-gray-600 mb-2">{attraction.ADDRESS}</p>
                   <a 
-                    href={attraction.URLADDRESS} 
+                    href={`https://www.google.com/maps?q=${attraction.URLADDRESS}`}
                     target="_blank" 
                     rel="noopener noreferrer"
                     className="text-blue-600 hover:underline"
                   >
-                    Xem trên Google Maps
+                    {/* Xem trên Google Maps */}
                   </a>
                 </div>
               )}
             </div>
-  
+
             {/* Reviews Section */}
             <div className="lg:col-span-1">
               <div className="bg-gray-50 rounded-xl p-6">
@@ -217,7 +237,7 @@ const ImageSlider = () => {
                     Viết đánh giá
                   </button>
                 </div>
-  
+
                 {/* Review Filters */}
                 <div className="flex gap-2 mb-6">
                   {['all', 'positive', 'negative'].map((type) => (
@@ -234,50 +254,53 @@ const ImageSlider = () => {
                     </button>
                   ))}
                 </div>
-  
+
                 {/* Reviews List */}
                 <div className="space-y-4 max-h-[600px] overflow-y-auto">
-                  {filteredReviews && filteredReviews.length > 0 ? (
-                    filteredReviews.map((review) => (
-                      <div key={review._id} className="bg-white p-4 rounded-lg">
-                        <div className="flex items-center gap-3 mb-2">
-                          <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                            {review.userId.FULLNAME.charAt(0)}
-                          </div>
-                          <div>
-                            <div className="font-medium">{review.userId.FULLNAME}</div>
-                            <div className="flex gap-1">
-                              {renderStars(review.rating)}
-                            </div>
-                          </div>
-                        </div>
-                        <p className="text-gray-600">{review.comment}</p>
-                      </div>
-                    ))
-                  ) : (
-                    <div className="text-center py-8 text-gray-500">
-                      Chưa có đánh giá nào.
-                    </div>
-                  )}
-                </div>
+  {filteredReviews.length > 0 ? (
+    filteredReviews.map((review) => (
+      <div key={review._id} className="bg-white p-4 rounded-lg">
+        <div className="flex items-center gap-3 mb-2">
+          <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+            {review.userId && review.userId.FULLNAME ? review.userId.FULLNAME.charAt(0) : ''}
+          </div>
+          <div>
+            <div className="font-medium">
+              {review.userId && review.userId.FULLNAME ? review.userId.FULLNAME : 'Unknown User'}
+            </div>
+            <div className="flex gap-1">
+              {renderStars(review.rating)}
+            </div>
+          </div>
+        </div>
+        <p className="text-gray-600">{review.comment}</p>
+      </div>
+    ))
+  ) : (
+    <div className="text-center py-8 text-gray-500">
+      Chưa có đánh giá nào.
+    </div>
+  )}
+</div>
+
               </div>
             </div>
           </div>
         </div>
+
+        {/* Rating Modal */}
+        <RatingModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          onSubmit={handleSubmitReview}
+          rating={userRating}
+          setRating={handleRatingChange}
+          feedback={feedback}
+          setFeedback={setFeedback}
+        />
       </div>
-  
-      {/* Rating Modal */}
-      <RatingModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        onSubmit={handleSubmitReview}
-        rating={userRating}
-        setRating={handleRatingChange}
-        feedback={feedback}
-        setFeedback={setFeedback}
-      />
     </div>
   );
 };
 
-export default ImageSlider;
+export default AttractionDetail;

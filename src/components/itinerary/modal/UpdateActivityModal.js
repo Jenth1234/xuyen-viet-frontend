@@ -13,30 +13,28 @@ const UpdateActivity = ({ isOpen, onClose, activity, onUpdate }) => {
   const [initialData, setInitialData] = useState({});
 
   useEffect(() => {
-    const fetchActivity = async () => {
-      if (isOpen && activity) {
-        try {
-          const response = await getActivity(activity);
-          const startTime = new Date(response.STARTTIME).toISOString().slice(11, 16);
-          const endTime = new Date(response.ENDTIME).toISOString().slice(11, 16);
-          const fetchedData = {
-            NAME: response.NAME || "",
-            LOCATION: response.LOCATION || "",
-            DESCRIPTION: response.DESCRIPTION || "",
-            COST: response.COST || "",
-            STARTTIME: startTime,
-            ENDTIME: endTime,
-          };
-          setFormData(fetchedData);
-          setInitialData(fetchedData);
-        } catch (error) {
-          console.error("Error fetching activity:", error);
-        }
+    if (isOpen && activity) {
+      try {
+        // Sử dụng trực tiếp dữ liệu từ prop activity thay vì gọi API
+        const startTime = new Date(activity.STARTTIME).toISOString().slice(11, 16);
+        const endTime = activity.ENDTIME ? new Date(activity.ENDTIME).toISOString().slice(11, 16) : '';
+        
+        const activityData = {
+          NAME: activity.NAME || "",
+          LOCATION: activity.LOCATION || "",
+          DESCRIPTION: activity.DESCRIPTION || "",
+          COST: activity.COST || "",
+          STARTTIME: startTime,
+          ENDTIME: endTime,
+        };
+        
+        setFormData(activityData);
+        setInitialData(activityData);
+      } catch (error) {
+        console.error("Error setting activity data:", error);
       }
-    };
-    fetchActivity();
+    }
   }, [isOpen, activity]);
-
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -46,15 +44,20 @@ const UpdateActivity = ({ isOpen, onClose, activity, onUpdate }) => {
     e.preventDefault();
     if (JSON.stringify(formData) !== JSON.stringify(initialData)) {
       try {
-        // Chuyển đổi thời gian sang định dạng Date
-        const { STARTTIME, ENDTIME, ...rest } = formData; // Tách STARTTIME và ENDTIME ra
+        const { STARTTIME, ENDTIME, ...rest } = formData;
         const updatedData = {
           ...rest,
           STARTTIME: new Date(new Date().toISOString().split("T")[0] + "T" + STARTTIME + ":00"),
           ENDTIME: new Date(new Date().toISOString().split("T")[0] + "T" + ENDTIME + ":00"),
         };
-        await updateActivity(activity, updatedData);
-        onUpdate(updatedData);
+        // Không gọi API ở đây nữa
+        // await updateActivity(activity, updatedData);
+        
+        // Chỉ cập nhật state tạm thời
+        onUpdate({
+          ...activity, // Giữ lại _id và các trường khác
+          ...updatedData
+        });
         onClose();
       } catch (error) {
         console.error("Error updating activity:", error);

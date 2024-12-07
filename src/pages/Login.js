@@ -48,9 +48,9 @@ const Login = () => {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen" style={{ backgroundColor: '#CAE7C3' }}>
-      <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-md">
-        <Title level={2} className="text-center mb-8" style={{ color: '#FFF7ED' }}>
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-gray-100 via-blue-100 to-blue-200">
+      <div className="bg-white p-10 rounded-lg shadow-lg w-full max-w-md">
+        <Title level={2} className="text-center mb-6" style={{ color: '#333' }}>
           Đăng Nhập
         </Title>
         {error && <Alert message={error} type="error" showIcon className="mb-4" />}
@@ -64,7 +64,7 @@ const Login = () => {
               value={USERNAME}
               onChange={(e) => setUsername(e.target.value)}
               placeholder="Nhập tên đăng nhập của bạn"
-              className="w-full"
+              className="w-full border border-gray-300 rounded-md focus:border-blue-500 focus:ring-blue-500"
             />
           </Form.Item>
 
@@ -77,20 +77,24 @@ const Login = () => {
               value={PASSWORD}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Nhập mật khẩu của bạn"
-              className="w-full"
+              className="w-full border border-gray-300 rounded-md focus:border-blue-500 focus:ring-blue-500"
               iconRender={(visible) =>
                 visible ? <FontAwesomeIcon icon={faEyeSlash} /> : <FontAwesomeIcon icon={faEye} />
               }
             />
           </Form.Item>
 
-          <Button type="primary" htmlType="submit" className="w-full bg-gradient-to-r from-green-400 to-blue-500 hover:from-blue-500 hover:to-green-400 focus:outline-none focus:ring-2 focus:ring-blue-500 text-white font-semibold py-2 px-4 rounded-md">
+          <Button
+            type="primary"
+            htmlType="submit"
+            className="w-full bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 text-white font-medium py-2 px-4 rounded-md shadow-md"
+          >
             Đăng nhập
           </Button>
         </Form>
 
         <div className="mt-4 text-center">
-          <Text>Chưa có tài khoản?</Text>
+          <Text className="text-gray-600">Chưa có tài khoản?</Text>
           <Button type="link" onClick={goToRegister} className="mt-2 text-blue-600 hover:text-blue-800">
             Đăng ký ngay
           </Button>
