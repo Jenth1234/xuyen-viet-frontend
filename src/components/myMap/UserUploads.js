@@ -63,7 +63,7 @@ const UserUploads = () => {
   // Handlers
   const handlePhotoClick = useCallback((photoUrl, province) => {
     const defaultProvincePhotos = defaultPhotos[province] || [];
-    const uploadedProvincePhotos = uploads.find(u => u.PROVINCE === province)?.PHOTOURLS || [];
+    const uploadedProvincePhotos = uploads.find(u => u.PROVINCE === province)?.PHOTOS.map(p => p.URL) || [];
     const combinedPhotos = [...defaultProvincePhotos, ...uploadedProvincePhotos];
     
     const index = combinedPhotos.indexOf(photoUrl);
@@ -137,114 +137,139 @@ const UserUploads = () => {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <h1 className="text-3xl font-bold text-gray-900 mb-8">Kỷ niệm du lịch của bạn</h1>
-      <div className="space-y-8">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 bg-gray-50 min-h-screen">
+      <h1 className="text-4xl font-bold text-gray-900 mb-2">Kỷ niệm du lịch của bạn</h1>
+      <p className="text-gray-600 mb-8">Lưu giữ những khoảnh khắc đẹp trên hành trình khám phá Việt Nam</p>
+      
+      <div className="space-y-10">
         {uploads.map((upload, index) => (
-          <div key={index} className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300">
+          <div key={index} className="bg-white rounded-3xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 border border-gray-100">
             {/* Province Header */}
-            <div className="bg-gradient-to-r from-blue-500 to-blue-600 px-6 py-4">
-              <h3 className="text-2xl font-bold text-white flex items-center">
-                <FontAwesomeIcon icon={faMapMarkerAlt} className="mr-3" />
-                {upload.PROVINCE}
-              </h3>
-              <div className="flex items-center text-blue-100 mt-2">
-                <FontAwesomeIcon icon={faCalendarAlt} className="mr-2" />
-                <span>
-                  {arrivalDates[upload.PROVINCE] 
-                    ? new Date(arrivalDates[upload.PROVINCE]).toLocaleDateString('vi-VN', {
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric'
-                      })
-                    : "Chưa có thông tin ngày đến"}
-                </span>
+            <div className="bg-gradient-to-r from-blue-600 to-indigo-600 px-8 py-6">
+              <div className="flex justify-between items-start">
+                <div>
+                  <h3 className="text-3xl font-bold text-white flex items-center mb-3">
+                    <FontAwesomeIcon icon={faMapMarkerAlt} className="mr-3" />
+                    {upload.PROVINCE}
+                  </h3>
+                  <div className="flex items-center text-blue-100">
+                    <FontAwesomeIcon icon={faCalendarAlt} className="mr-2" />
+                    <span className="text-lg">
+                      {arrivalDates[upload.PROVINCE] 
+                        ? new Date(arrivalDates[upload.PROVINCE]).toLocaleDateString('vi-VN', {
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric'
+                          })
+                        : "Chưa có thông tin ngày đến"}
+                    </span>
+                  </div>
+                </div>
+                <button
+                  onClick={() => {
+                    setSelectedProvince(upload.PROVINCE);
+                    setShowModal(true);
+                  }}
+                  className="flex items-center px-5 py-3 bg-white/10 text-white rounded-xl
+                    hover:bg-white/20 transition-all duration-300 backdrop-blur-sm"
+                >
+                  <FontAwesomeIcon icon={faPlus} className="mr-2" />
+                  Thêm Ảnh
+                </button>
               </div>
             </div>
 
             {/* Photos Grid */}
-            <div className="p-6">
+            <div className="p-8">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 {/* Default Photos */}
-                <div className="space-y-4">
-                  <h4 className="text-lg font-semibold text-gray-700 flex items-center">
-                    <FontAwesomeIcon icon={faImages} className="mr-2" />
+                <div className="space-y-6">
+                  <h4 className="text-xl font-semibold text-gray-800 flex items-center">
+                    <FontAwesomeIcon icon={faImages} className="mr-3 text-blue-500" />
                     Ảnh Tham Khảo
                   </h4>
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-2 gap-6">
                     {(defaultPhotos[upload.PROVINCE] || [])
                       .slice(0, 4)
                       .map((photo, i) => (
                         <div 
                           key={`default-${i}`}
-                          className="relative group rounded-lg overflow-hidden cursor-pointer"
+                          className="relative group rounded-2xl overflow-hidden cursor-pointer aspect-square shadow-sm hover:shadow-lg transition-all duration-300"
                         >
                           <img
                             src={photo}
                             alt={`${upload.PROVINCE} ${i + 1}`}
-                            className="w-full h-48 object-cover transform transition-all duration-500 group-hover:scale-110"
+                            className="w-full h-full object-cover transform transition-all duration-500 group-hover:scale-110"
                             onClick={() => handlePhotoClick(photo, upload.PROVINCE)}
                           />
-                          <div className="absolute inset-0 bg-black opacity-0 group-hover:opacity-30 transition-opacity duration-300" />
+                          <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                         </div>
                     ))}
                   </div>
                 </div>
 
                 {/* User Photos */}
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <h4 className="text-lg font-semibold text-gray-700 flex items-center">
-                      <FontAwesomeIcon icon={faImages} className="mr-2" />
-                      Ảnh Của Bạn
-                    </h4>
-                    <button
-                      onClick={() => {
-                        setSelectedProvince(upload.PROVINCE);
-                        setShowModal(true);
-                      }}
-                      className="flex items-center px-4 py-2 bg-green-500 text-white rounded-lg 
-                        hover:bg-green-600 transition-all duration-300 transform hover:scale-105"
-                    >
-                      <FontAwesomeIcon icon={faPlus} className="mr-2" />
-                      Thêm Ảnh
-                    </button>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4">
-                    {upload.PHOTOURLS && upload.PHOTOURLS.length > 0 ? (
-                      upload.PHOTOURLS.slice(0, 4).map((url, i) => (
+                <div className="space-y-6">
+                  <h4 className="text-xl font-semibold text-gray-800 flex items-center">
+                    <FontAwesomeIcon icon={faImages} className="mr-3 text-blue-500" />
+                    Ảnh Của Bạn ({upload.PHOTOS?.length || 0})
+                  </h4>
+                  <div className="grid grid-cols-2 gap-6">
+                    {upload.PHOTOS && upload.PHOTOS.length > 0 ? (
+                      upload.PHOTOS.slice(0, 4).map((photo, i) => (
                         <div 
-                          key={`uploaded-${i}`}
-                          className="relative group rounded-lg overflow-hidden cursor-pointer"
+                          key={photo._id}
+                          className="relative group rounded-2xl overflow-hidden cursor-pointer aspect-square shadow-sm hover:shadow-lg transition-all duration-300"
                         >
                           <img
-                            src={url}
+                            src={photo.URL}
                             alt={`Uploaded ${i + 1}`}
-                            className="w-full h-48 object-cover transform transition-all duration-500 group-hover:scale-110"
-                            onClick={() => handlePhotoClick(url, upload.PROVINCE)}
+                            className="w-full h-full object-cover transform transition-all duration-500 group-hover:scale-110"
+                            onClick={() => handlePhotoClick(photo.URL, upload.PROVINCE)}
                           />
-                          <div className="absolute inset-0 bg-black opacity-0 group-hover:opacity-30 transition-opacity duration-300" />
+                          <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                          <div className="absolute bottom-0 left-0 right-0 p-4 text-white transform translate-y-full group-hover:translate-y-0 transition-transform duration-300">
+                            <p className="text-sm font-medium">
+                              {new Date(photo.UPLOAD_DATE).toLocaleDateString('vi-VN', {
+                                year: 'numeric',
+                                month: 'long',
+                                day: 'numeric'
+                              })}
+                            </p>
+                            {photo.DESCRIPTION && (
+                              <p className="text-sm mt-2 opacity-90 line-clamp-2">
+                                {photo.DESCRIPTION}
+                              </p>
+                            )}
+                          </div>
                         </div>
                       ))
                     ) : (
-                      <div className="col-span-2 flex flex-col items-center justify-center h-48 bg-gray-50 
-                        rounded-lg border-2 border-dashed border-gray-300">
-                        <FontAwesomeIcon icon={faImages} className="text-gray-400 text-3xl mb-2" />
-                        <p className="text-gray-500 text-center">
-                          Chưa có ảnh nào được tải lên
-                        </p>
+                      <div className="col-span-2 flex flex-col items-center justify-center py-12 bg-gray-50 rounded-2xl border-2 border-dashed border-gray-200">
+                        <FontAwesomeIcon icon={faImages} className="text-gray-400 text-5xl mb-4" />
+                        <p className="text-gray-500 text-lg">Chưa có ảnh nào được tải lên</p>
+                        <p className="text-gray-400 mt-2">Hãy thêm những kỷ niệm đẹp của bạn</p>
                       </div>
                     )}
                   </div>
 
-                  {upload.PHOTOURLS?.length > 4 && (
+                  {upload.PHOTOS?.length > 4 && (
                     <button
-                      onClick={() => setIsViewingAllPhotos(true)}
-                      className="w-full py-2 text-blue-600 hover:text-blue-700 font-medium text-center 
-                        transition-colors duration-300 hover:bg-blue-50 rounded-lg"
+                      onClick={() => {
+                        setPhotoList(upload.PHOTOS.map(photo => ({
+                          url: photo.URL,
+                          id: photo._id,
+                          uploadDate: photo.UPLOAD_DATE,
+                          description: photo.DESCRIPTION
+                        })));
+                        setSelectedProvince(upload.PROVINCE);
+                        setIsViewingAllPhotos(true);
+                      }}
+                      className="w-full py-3 mt-4 text-blue-600 hover:text-blue-700 font-medium text-center 
+                        bg-blue-50 hover:bg-blue-100 rounded-xl transition-all duration-300"
                     >
-                      Xem tất cả ({upload.PHOTOURLS.length} ảnh)
+                      <FontAwesomeIcon icon={faImages} className="mr-2" />
+                      Xem tất cả ({upload.PHOTOS.length} ảnh)
                     </button>
                   )}
                 </div>
@@ -271,10 +296,29 @@ const UserUploads = () => {
         />
         <AllPhotosModal
           isOpen={isViewingAllPhotos}
-          onClose={handleCloseFullSizeModal}
+          onClose={() => {
+            handleCloseFullSizeModal();
+            setSelectedProvince("");
+          }}
           photoList={photoList}
           currentPhotoIndex={currentPhotoIndex}
           setCurrentPhotoIndex={setCurrentPhotoIndex}
+          province={selectedProvince}
+          onPhotoDelete={(deletedPhoto) => {
+            setUploads(prevUploads => {
+              return prevUploads.map(prov => {
+                if (prov.PROVINCE === selectedProvince) {
+                  return {
+                    ...prov,
+                    PHOTOS: prov.PHOTOS.filter(photo => photo._id !== deletedPhoto.id)
+                  };
+                }
+                return prov;
+              });
+            });
+            
+            setPhotoList(prev => prev.filter(photo => photo.id !== deletedPhoto.id));
+          }}
         />
       </div>
     </div>

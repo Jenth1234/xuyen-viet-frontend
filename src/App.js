@@ -33,6 +33,7 @@ import SuggestItinerary from './pages/SuggestItinerary'
 import SuggestPlace from './components/itinerary/SuggestPlace'
 import HotelSearchResults from './components/Hotel/HotelSearchResults';
 import Promotions from './pages/Promotions'; // Thêm import cho trang K
+import SharedItinerary from './components/itinerary/SharedItinerary'; 
 const App = () => {
   return (
     <AuthProvider>
@@ -79,6 +80,7 @@ const App = () => {
           <Route path="/suggest-itinerary" element={<PrivateRoute element={<SuggestItinerary />} />} />
           <Route path="/suggest-place" element={<PrivateRoute element={<SuggestPlace />} />} />
           <Route path="/itinerary/:itineraryId/update" element={<PrivateRoute element={<UpdateDetailItinerary />} />} />
+          <Route path="/shared-itinerary/:id" element={<PrivateRoute element={<SharedItinerary />} />} />
         </Routes>
         </div>
       

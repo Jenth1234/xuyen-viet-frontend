@@ -28,13 +28,13 @@ const FlightOffer = () => {
   const [destinationSuggestions, setDestinationSuggestions] = useState([]);
 
 
-  const navigate = useNavigate(); // Khai báo useNavigate
+  const navigate = useNavigate();
   const handleSearch = async () => {
     try {
       const results = await searchFlights(origin, destination, departureDate, returnDate, passengerCount, seatClass);
       setFlights(Array.isArray(results) ? results : []);
   
-      // Tạo đối tượng chứa thông tin chuyến bay
+      
       const flightInfo = {
         origin,
         destination,
@@ -42,10 +42,10 @@ const FlightOffer = () => {
         returnDate,
         passengerCount,
         seatClass,
-        flights: results // Thêm kết quả chuyến bay vào đối tượng
+        flights: results 
       };
   
-      // Chuyển đến trang mới với toàn bộ thông tin chuyến bay
+   
       navigate('/flight-list', { state: flightInfo }); // Thay '/flight-results' bằng đường dẫn trang kết quả bạn muốn
     } catch (err) {
       setError('Có lỗi xảy ra khi tìm kiếm chuyến bay.');

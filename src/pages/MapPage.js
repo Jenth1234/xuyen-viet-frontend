@@ -88,8 +88,8 @@ const MapPage = () => {
         {/* Main Content */}
         <div className="space-y-8">
           {/* Map and Statistics Section */}
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-            <div className="lg:col-span-3 bg-white rounded-xl shadow-sm p-4 hover:shadow-md transition-shadow">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="lg:col-span-2 bg-white rounded-xl shadow-sm p-4 hover:shadow-md transition-shadow">
               <Map onAddProvince={handleSaveProvince} />
             </div>
 
@@ -101,14 +101,14 @@ const MapPage = () => {
           </div>
 
           {/* Summary and Uploads Section */}
-          <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-            <div className="lg:col-span-1">
+          <div className="grid grid-cols-1 lg:grid-cols-10 gap-6">
+            <div className="lg:col-span-3">
               <div className="bg-white rounded-xl shadow-sm p-6 hover:shadow-md transition-shadow">
-                <SummaryInformation  />
+                <SummaryInformation />
               </div>
             </div>
 
-            <div className="lg:col-span-4">
+            <div className="lg:col-span-7">
               <div className="bg-white rounded-xl shadow-sm p-6 hover:shadow-md transition-shadow">
                 <UserUploads uploads={uploads} onUploadClick={openUploadModal} />
               </div>

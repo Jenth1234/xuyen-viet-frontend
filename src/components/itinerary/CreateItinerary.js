@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { createItinerary } from '../../api/callApi';
+import { createItinerary } from '../../api/ApiItinerary';
 import { useAuth } from '../../context/AuthContext';
 import bgItinerary from "../../style/img/lienkhuong2.jpg";
 import ProgressBar from '../../components/itinerary/ProgressBar';
@@ -126,13 +126,20 @@ const CreateItinerary = () => {
         places: placeIds
       };
 
-      const result = await createItinerary(dataToSend);
+      const response = await createItinerary(dataToSend);
+      
+      if (!response?.data?.data?._id) {
+        throw new Error('Không thể lấy ID từ response');
+      }
+
+      const itineraryId = response.data.data._id;
       
       toast.success('Tạo lịch trình thành công!');
       
-      navigate(`/itinerary/${result._id}`, {
+      navigate(`/itinerary/${itineraryId}`, {
+        replace: true,
         state: {
-          itineraryId: result._id,
+          itineraryId,
           days: daysCount,
           startDate: formData.startDate,
           endDate: formData.endDate,
@@ -146,6 +153,7 @@ const CreateItinerary = () => {
           provinceName: province?.name
         }
       });
+
     } catch (error) {
       console.error('Error creating itinerary:', error);
       toast.error('Đã xảy ra lỗi khi tạo lịch trình.');

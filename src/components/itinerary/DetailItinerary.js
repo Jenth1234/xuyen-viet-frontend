@@ -3,7 +3,8 @@ import { useLocation, useParams } from "react-router-dom";
 import ActivityModal from "./modal/ActivityModal";
 import UpdateActivity from "./modal/UpdateActivityModal";
 import UpdateItineraryModal from "./modal/UpdateItineraryModal"; // update
-import { getItinerary, updateActivity,createActivity,createBulkActivities } from "../../api/callApi";
+import {  updateActivity,createActivity,createBulkActivities } from "../../api/callApi";
+import { getItinerary, } from "../../api/ApiItinerary";
 import { getPlaceById } from "../../api/ApiPlace";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
@@ -11,6 +12,7 @@ import Test from "./test";
 
 import {
   faRoute,
+  faBars,
   faInfoCircle,
   faCalendarAlt,
   faDollarSign,
@@ -72,11 +74,12 @@ const DetailPage = () => {
   const [days, setDays] = useState(0);
   const [places, setPlaces] = useState([]);
   const [pendingChanges, setPendingChanges] = useState({
-    newActivities: [], // Các hoạt động mới chưa lưu
-    updatedActivities: [], // Các hoạt động đã chỉnh sửa
-    deletedActivities: [] // Các hoạt động đã xóa
+    newActivities: [],
+    updatedActivities: [],
+    deletedActivities: [],
+    reorderedActivities: false
   });
-  const [selectedPlace, setSelectedPlace] = useState(null); // Trạng thái lưu địa điểm đã chọn
+  const [selectedPlace, setSelectedPlace] = useState(null); // Trạng thái l��u địa điểm đã chọn
   const [invoices, setInvoices] = useState([]);
   const [activitiesState, setActivitiesState] = useState(activities);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -109,38 +112,26 @@ useEffect(() => {
   const fetchData = async () => {
     try {
       const response = await getItinerary(itineraryId);
-      const activitiesData = response.ACTIVITIES || [];
-      if (response) {
-        setItinerary(response);
-        setStartDate(response.START_DATE);
-        setEndDate(response.END_DATE);
+      
+      if (response.success && response.data) {
+        const itineraryData = response.data;
+        setItinerary(itineraryData);
+        setStartDate(itineraryData.START_DATE);
+        setEndDate(itineraryData.END_DATE);
         
-        const startDateObj = new Date(response.START_DATE);
-        const endDateObj = new Date(response.END_DATE);
-        const dayCount = Math.ceil((endDateObj - startDateObj) / (1000 * 60 * 60 * 24)) + 1;
-
-        // Khởi tạo dateArray
-        const dates = Array.from({ length: dayCount }, (_, index) => {
-          const currentDate = new Date(startDateObj);
-          currentDate.setDate(currentDate.getDate() + index);
-          return currentDate.toISOString().split("T")[0];
-        });
+        // Khởi tạo dateArray từ DAYS
+        const dates = itineraryData.DAYS.map(day => 
+          new Date(day.DATE).toISOString().split('T')[0]
+        );
         setDateArray(dates);
 
-        // Khởi tạo activitiesState với mảng rỗng cho mỗi ngày
-        const initialActivitiesState = Array(dayCount).fill().map(() => []);
-
-        // Phân loại hoạt động vào ngày tương ứng
-        activitiesData.forEach((activity) => {
-          const activityDate = new Date(activity.STARTTIME);
-          const dayIndex = Math.floor((activityDate - startDateObj) / (1000 * 60 * 60 * 24));
-          if (dayIndex >= 0 && dayIndex < dayCount) {
-            initialActivitiesState[dayIndex].push(activity);
-          }
-        });
-
+        // Khởi tạo activitiesState từ DAYS
+        const initialActivitiesState = itineraryData.DAYS.map(day => 
+          day.ACTIVITIES || []
+        );
         setActivitiesState(initialActivitiesState);
-        setDays(dayCount);
+        
+        setDays(itineraryData.DAYS.length);
         setTotalCost(calculateTotalCost(initialActivitiesState));
       }
     } catch (error) {
@@ -773,7 +764,7 @@ const handleApplyRoute = async () => {
 
   // closeModal
   const closeModal = () => setIsModalOpen(false);
-  // Mở modal để chỉnh s���a một hoạt động hiện có
+  // M modal để chỉnh sửa một hoạt động hiện có
   const handleEditActivity = (activity, dayIndex) => {
     setCurrentActivity(activity);
     setCurrentDayIndex(dayIndex);
@@ -799,8 +790,17 @@ const handleApplyRoute = async () => {
       return newState;
     });
 
-    // Thêm vào danh sách thay đổi chờ xử lý
-    setPendingChanges(prev => [...prev, updatedActivity]);
+    // Cập nhật pendingChanges đúng cách
+    setPendingChanges(prev => ({
+      ...prev,
+      updatedActivities: [
+        ...prev.updatedActivities,
+        { ...updatedActivity, dayIndex: currentDayIndex }
+      ]
+    }));
+
+    setIsEditing(false);
+    toast.success('Đã cập nhật hoạt động! Nhớ bấm "Lưu" để lưu lại các thay đổi.');
   };
     // Thêm hàm mới để xử lý submit tất cả thay đổi
     const handleSubmitAllChanges = async () => {
@@ -883,6 +883,40 @@ const handleApplyRoute = async () => {
   
     setIsModalOpen(false);
     toast.success('Đã thêm hoạt động mới! Nhớ bấm "Lưu" để lưu lại các thay đổi.');
+  };
+
+  const onDragEnd = (result) => {
+    if (!result.destination) return;
+
+    const { source, destination } = result;
+    const sourceDay = parseInt(source.droppableId);
+    const destDay = parseInt(destination.droppableId);
+
+    const newActivitiesState = [...activitiesState];
+    const [movedActivity] = newActivitiesState[sourceDay].splice(source.index, 1);
+    
+    // Cập nhật ngày mới cho hoạt động
+    movedActivity.DATE = dateArray[destDay];
+    newActivitiesState[destDay].splice(destination.index, 0, movedActivity);
+
+    setActivitiesState(newActivitiesState);
+    
+    // Thêm hoạt động đã di chuyển vào pendingChanges
+    setPendingChanges(prev => ({
+      ...prev,
+      newActivities: [
+        ...prev.newActivities,
+        {
+          ...movedActivity,
+          dayIndex: destDay,
+          DATE: dateArray[destDay]
+        }
+      ],
+      reorderedActivities: true
+    }));
+
+    // Kích hoạt nút lưu
+    document.querySelector('button[onClick="handleSaveAndShare"]')?.removeAttribute('disabled');
   };
 
   return (
@@ -1272,93 +1306,141 @@ const handleApplyRoute = async () => {
   </div>
 
   {/* Activities Timeline */}
-  {Array.from({ length: days }).map((_, dayIndex) => (
-  <div
-    key={dayIndex}
-    ref={(el) => (dayRefs.current[dayIndex] = el)}
-    className="bg-white rounded-xl shadow-lg p-6"
-  >
-    <h2 className="text-2xl font-bold mb-6 flex items-center text-gray-800">
-      <FontAwesomeIcon icon={faCalendarDay} className="mr-3 text-blue-600" />
-      Ngày {dayIndex + 1}: {dateArray[dayIndex]}
-    </h2>
-
-    <div className="space-y-6">
-      {/* Kiểm tra và hiển thị activities */}
-      {activitiesState[dayIndex] && activitiesState[dayIndex].length > 0 ? (
-        activitiesState[dayIndex].map((activity, idx) => (
-          <div
-            key={activity._id || idx}
-            className="bg-gray-50 rounded-xl p-6 shadow-md hover:shadow-lg transition-shadow duration-200"
-          >
-            <div className="flex justify-between items-start">
-              <div className="flex items-start space-x-6">
-                <div className="flex flex-col items-center">
-                  <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center">
-                    <FontAwesomeIcon icon={faClock} className="text-blue-600" />
-                  </div>
-                  <div className="mt-2 text-sm font-medium text-gray-600">
-                    {new Date(activity.STARTTIME).toLocaleTimeString([], {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })}
-                  </div>
-                </div>
-
-                <div className="flex-1">
-                  <h4 className="text-xl font-semibold text-gray-800 mb-2">
-                    {activity.NAME}
-                    {activity.isTemp && (
-                      <span className="ml-2 px-2 py-1 bg-yellow-100 text-yellow-800 text-xs rounded-full">
-                        Chưa lưu
-                      </span>
-                    )}
-                  </h4>
-                  <p className="flex items-center text-gray-600 mb-2">
-                    <FontAwesomeIcon icon={faMapMarkerAlt} className="mr-2" />
-                    {activity.LOCATION}
-                  </p>
-                  <p className="flex items-center text-gray-600">
-                    <FontAwesomeIcon icon={faInfoCircle} className="mr-2" />
-                    {activity.DESCRIPTION}
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex flex-col items-end">
-                <div className="text-lg font-bold text-blue-600">
-                  {new Intl.NumberFormat('vi-VN', {
-                    style: 'currency',
-                    currency: 'VND'
-                  }).format(activity.COST)}
-                </div>
-                <button
-                  onClick={() => handleEditActivity(activity, dayIndex)}
-                  className="mt-4 py-2 px-4 bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg shadow-md transition-colors duration-200 flex items-center"
-                >
-                  <FontAwesomeIcon icon={faEdit} className="mr-2" />
-                  Chỉnh sửa
-                </button>
-              </div>
-            </div>
-          </div>
-        ))
-      ) : (
-        <p className="text-center text-gray-500 py-4">
-          Chưa có hoạt động nào cho ngày này
-        </p>
-      )}
-
-      <button
-        onClick={() => handleAddActivity(dayIndex)}
-        className="w-full py-3 px-4 bg-green-600 hover:bg-green-700 text-white rounded-lg shadow-md transition-colors duration-200 flex items-center justify-center"
+  <DragDropContext onDragEnd={onDragEnd}>
+    {Array.from({ length: days }).map((_, dayIndex) => (
+      <div
+        key={dayIndex}
+        ref={(el) => (dayRefs.current[dayIndex] = el)}
+        className="bg-white rounded-xl shadow-lg p-6 mb-6"
       >
-        <FontAwesomeIcon icon={faPlus} className="mr-2" />
-        Thêm hoạt động
-      </button>
-    </div>
-  </div>
-))}
+        <h2 className="text-2xl font-bold mb-6 flex items-center text-gray-800">
+          <FontAwesomeIcon icon={faCalendarDay} className="mr-3 text-blue-600" />
+          Ngày {dayIndex + 1}: {dateArray[dayIndex]}
+        </h2>
+
+        <Droppable droppableId={dayIndex.toString()}>
+          {(provided, snapshot) => (
+            <div
+              ref={provided.innerRef}
+              {...provided.droppableProps}
+              className={`space-y-4 min-h-[100px] ${
+                snapshot.isDraggingOver ? 'bg-blue-50' : ''
+              } rounded-lg p-4 transition-colors duration-200`}
+            >
+              {activitiesState[dayIndex] && activitiesState[dayIndex].length > 0 ? (
+                activitiesState[dayIndex].map((activity, idx) => (
+                  <Draggable
+                    key={activity._id || `temp-${idx}`}
+                    draggableId={activity._id || `temp-${idx}`}
+                    index={idx}
+                  >
+                    {(provided, snapshot) => (
+                      <div
+                        ref={provided.innerRef}
+                        {...provided.draggableProps}
+                        className={`bg-white rounded-xl p-6 shadow-md ${
+                          snapshot.isDragging ? 'shadow-lg' : ''
+                        } transition-shadow duration-200`}
+                      >
+                        <div className="flex justify-between items-start">
+                          <div
+                            {...provided.dragHandleProps}
+                            className="cursor-move p-2 hover:bg-gray-100 rounded-lg mr-2"
+                          >
+                            <FontAwesomeIcon icon={faBars} />
+                          </div>
+                          
+                          <div className="flex-1">
+                            <div className="flex items-start space-x-6">
+                              <div className="flex flex-col items-center">
+                                <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center">
+                                  <FontAwesomeIcon icon={faClock} className="text-blue-600" />
+                                </div>
+                                <div className="mt-2 text-sm font-medium text-gray-600">
+                                  {new Date(activity.STARTTIME).toLocaleTimeString([], {
+                                    hour: "2-digit",
+                                    minute: "2-digit",
+                                  })}
+                                </div>
+                              </div>
+
+                              <div className="flex-1">
+                                <div className="flex items-start space-x-6">
+                                  <div className="flex flex-col items-center">
+                                    <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center">
+                                      <FontAwesomeIcon icon={faClock} className="text-blue-600" />
+                                    </div>
+                                    <div className="mt-2 text-sm font-medium text-gray-600">
+                                      {new Date(activity.STARTTIME).toLocaleTimeString([], {
+                                        hour: "2-digit",
+                                        minute: "2-digit",
+                                      })}
+                                    </div>
+                                  </div>
+
+                                  <div className="flex-1">
+                                    <h4 className="text-xl font-semibold text-gray-800 mb-2">
+                                      {activity.NAME}
+                                      {activity.isTemp && (
+                                        <span className="ml-2 px-2 py-1 bg-yellow-100 text-yellow-800 text-xs rounded-full">
+                                          Chưa lưu
+                                        </span>
+                                      )}
+                                    </h4>
+                                    <p className="flex items-center text-gray-600 mb-2">
+                                      <FontAwesomeIcon icon={faMapMarkerAlt} className="mr-2" />
+                                      {activity.LOCATION}
+                                    </p>
+                                    <p className="flex items-center text-gray-600">
+                                      <FontAwesomeIcon icon={faInfoCircle} className="mr-2" />
+                                      {activity.DESCRIPTION}
+                                    </p>
+                                  </div>
+                                </div>
+                              </div>
+
+                              <div className="flex flex-col items-end">
+                                <div className="text-lg font-bold text-blue-600">
+                                  {new Intl.NumberFormat('vi-VN', {
+                                    style: 'currency',
+                                    currency: 'VND'
+                                  }).format(activity.COST)}
+                                </div>
+                                <button
+                                  onClick={() => handleEditActivity(activity, dayIndex)}
+                                  className="mt-4 py-2 px-4 bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg shadow-md transition-colors duration-200 flex items-center"
+                                >
+                                  <FontAwesomeIcon icon={faEdit} className="mr-2" />
+                                  Chỉnh sửa
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </Draggable>
+                ))
+              ) : (
+                <p className="text-center text-gray-500 py-4">
+                  Chưa có hoạt động nào cho ngày này
+                </p>
+              )}
+              {provided.placeholder}
+            </div>
+          )}
+        </Droppable>
+
+        <button
+          onClick={() => handleAddActivity(dayIndex)}
+          className="w-full mt-4 py-3 px-4 bg-green-600 hover:bg-green-700 text-white rounded-lg shadow-md transition-colors duration-200 flex items-center justify-center"
+        >
+          <FontAwesomeIcon icon={faPlus} className="mr-2" />
+          Thêm hoạt động
+        </button>
+      </div>
+    ))}
+  </DragDropContext>
 
   {/* Action Buttons */}
   <div className="flex justify-end space-x-4">
@@ -1372,15 +1454,15 @@ const handleApplyRoute = async () => {
     <button
   onClick={handleSaveAndShare}
   className={`py-3 px-6 text-white rounded-lg shadow-md transition-colors duration-200 flex items-center ${
-    pendingChanges.newActivities.length > 0 
+    pendingChanges.newActivities.length > 0 || pendingChanges.reorderedActivities
       ? 'bg-blue-600 hover:bg-blue-700'
       : 'bg-gray-400 cursor-not-allowed'
   }`}
-  disabled={pendingChanges.newActivities.length === 0}
+  disabled={pendingChanges.newActivities.length === 0 && !pendingChanges.reorderedActivities}
 >
   <FontAwesomeIcon icon={faSave} className="mr-2" />
-  {pendingChanges.newActivities.length > 0 
-    ? `Lưu thay đổi (${pendingChanges.newActivities.length})` 
+  {(pendingChanges.newActivities.length > 0 || pendingChanges.reorderedActivities)
+    ? `Lưu thay đổi (${pendingChanges.newActivities.length + (pendingChanges.reorderedActivities ? 1 : 0)})` 
     : 'Lưu thay đổi'}
 </button>
   </div>

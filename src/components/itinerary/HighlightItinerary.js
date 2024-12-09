@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getShareableItems } from '../../api/ApiItinerary';
+import { getShareableItems, copyItinerary } from '../../api/ApiItinerary';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faCalendarAlt, faUser, faCopy, faEye } from '@fortawesome/free-solid-svg-icons';
+import { toast } from 'react-hot-toast';
 
 const HighlightItinerary = () => {
   const [highlightItems, setHighlightItems] = useState([]);
@@ -13,8 +16,11 @@ const HighlightItinerary = () => {
       try {
         setLoading(true);
         const response = await getShareableItems();
-        // Lấy mảng items từ response
-        setHighlightItems(response.items || []);
+        if (response.success && response.data.success) {
+          setHighlightItems(response.data.data || []);
+        } else {
+          throw new Error(response.message || 'Không thể tải dữ liệu');
+        }
       } catch (error) {
         console.error('Error fetching highlight items:', error);
         setError(error);
@@ -25,6 +31,50 @@ const HighlightItinerary = () => {
 
     fetchHighlightItems();
   }, []);
+
+  const handleCopy = async (itineraryId) => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        toast.error('Vui lòng đăng nhập để sao chép lịch trình');
+        navigate('/login');
+        return;
+      }
+
+      const response = await copyItinerary(itineraryId);
+      if (response.success) {
+        toast.success(
+          <div className="flex flex-col">
+            <span>Đã sao chép lịch trình thành công!</span>
+            <span className="text-sm text-gray-600">
+              Bạn có thể xem trong phần "Lịch trình của tôi"
+            </span>
+          </div>,
+          {
+            duration: 4000,
+            style: {
+              minWidth: '300px',
+            },
+          }
+        );
+      }
+    } catch (error) {
+      console.error('Error copying itinerary:', error);
+      toast.error(
+        error.message || 'Không thể sao chép lịch trình',
+        { duration: 3000 }
+      );
+    }
+  };
+
+  const handleViewDetails = (item) => {
+    navigate(`/shared-itinerary/${item._id}`, {
+      state: { 
+        viewOnly: true,
+        itineraryData: item 
+      }
+    });
+  };
 
   if (loading) {
     return (
@@ -37,7 +87,7 @@ const HighlightItinerary = () => {
   if (error) {
     return (
       <div className="text-center py-8 text-red-500">
-        Có lỗi xảy ra khi tải dữ liệu.
+        {error.message || 'Có lỗi xảy ra khi tải dữ liệu.'}
       </div>
     );
   }
@@ -57,7 +107,7 @@ const HighlightItinerary = () => {
             >
               <div className="relative h-48 overflow-hidden">
                 <img
-                  src="https://via.placeholder.com/400x300"
+                  src={item.USERID.AVATAR || "https://via.placeholder.com/400x300"}
                   alt={item.NAME}
                   className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                 />
@@ -70,22 +120,47 @@ const HighlightItinerary = () => {
               </div>
 
               <div className="p-4">
-                <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center space-x-2 mb-3">
+                  <img
+                    src={item.USERID.AVATAR}
+                    alt={item.USERID.USERNAME}
+                    className="w-6 h-6 rounded-full object-cover"
+                  />
                   <span className="text-sm text-gray-600">
-                    {new Date(item.START_DATE).toLocaleDateString('vi-VN')} - {new Date(item.END_DATE).toLocaleDateString('vi-VN')}
-                  </span>
-                  <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">
-                    {item.DAYS.length} ngày
+                    {item.USERID.FULLNAME}
                   </span>
                 </div>
 
-                <div className="flex items-center justify-between">
-                  <button
-                    onClick={() => navigate(`/itinerary/${item._id}`)}
-                    className="text-green-600 hover:text-green-700 text-sm font-medium transition-colors"
+                <div className="flex items-center text-gray-600 text-sm">
+                  <FontAwesomeIcon icon={faCalendarAlt} className="w-4 h-4 mr-2" />
+                  <span>
+                    {new Date(item.START_DATE).toLocaleDateString('vi-VN')} - 
+                    {new Date(item.END_DATE).toLocaleDateString('vi-VN')}
+                  </span>
+                </div>
+
+                <div className="mt-4 pt-3 border-t flex gap-2">
+                  {/* <button
+                    onClick={() => handleViewDetails(item)}
+                    className="flex-1 py-2 text-green-600 hover:text-green-700 
+                      text-sm font-medium transition-colors border border-green-600 
+                      rounded-lg hover:bg-green-50 flex items-center justify-center"
                   >
-                    Xem chi tiết →
-                  </button>
+                    <FontAwesomeIcon icon={faEye} className="mr-2" />
+                 
+                  </button> */}
+                  
+                  {!item.isOwner && (
+                    <button
+                      onClick={() => handleCopy(item._id)}
+                      className="px-4 py-2 text-blue-600 hover:text-blue-700 
+                        text-sm font-medium transition-colors border border-blue-600 
+                        rounded-lg hover:bg-blue-50 flex items-center justify-center"
+                      title="Sao chép lịch trình này"
+                    >
+                      <FontAwesomeIcon icon={faCopy} />
+                    </button>
+                  )}
                 </div>
               </div>
             </div>

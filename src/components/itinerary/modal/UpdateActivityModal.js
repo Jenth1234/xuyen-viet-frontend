@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { updateActivity, getActivity } from "../../../api/callApi";
+import { toast } from "react-hot-toast";
 
 const UpdateActivity = ({ isOpen, onClose, activity, onUpdate }) => {
   const [formData, setFormData] = useState({
@@ -46,21 +47,17 @@ const UpdateActivity = ({ isOpen, onClose, activity, onUpdate }) => {
       try {
         const { STARTTIME, ENDTIME, ...rest } = formData;
         const updatedData = {
-          ...rest,
-          STARTTIME: new Date(new Date().toISOString().split("T")[0] + "T" + STARTTIME + ":00"),
-          ENDTIME: new Date(new Date().toISOString().split("T")[0] + "T" + ENDTIME + ":00"),
-        };
-        // Không gọi API ở đây nữa
-        // await updateActivity(activity, updatedData);
-        
-        // Chỉ cập nhật state tạm thời
-        onUpdate({
           ...activity, // Giữ lại _id và các trường khác
-          ...updatedData
-        });
+          ...rest,
+          STARTTIME: new Date(activity.STARTTIME.split('T')[0] + 'T' + STARTTIME + ':00'),
+          ENDTIME: new Date(activity.STARTTIME.split('T')[0] + 'T' + ENDTIME + ':00'),
+        };
+        
+        onUpdate(updatedData);
         onClose();
       } catch (error) {
         console.error("Error updating activity:", error);
+        toast.error("Có lỗi xảy ra khi cập nhật hoạt động!");
       }
     } else {
       console.log("No changes detected.");

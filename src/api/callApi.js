@@ -395,41 +395,23 @@ console.log('Field:', field);
 
 
 
-
-export const createItinerary = async (itineraryData, userId) => {
-  try {
-    // Tạo đối tượng dữ liệu để gửi đi, bao gồm userId và itineraryData
-    const dataToSend = {
-      ...itineraryData,
-      userId, // Thêm userId vào dữ liệu gửi
-    };
-
-    // Lấy mã thông báo từ localStorage
-    const token = localStorage.getItem('token');
-
-    if (!token) {
-      throw new Error('Authorization token is required');
-    }
-
-    const response = await fetch(`${API_URL}/itinerary/create`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`, // Thêm mã thông báo vào tiêu đề
-      },
-      body: JSON.stringify(dataToSend),
-    });
-
-    if (!response.ok) {
-      throw new Error('Failed to create itinerary');
-    }
-
-    return await response.json();
-  } catch (error) {
-    console.error('Error creating itinerary:', error);
-    throw error;
-  }
-};
+// export const createItinerary = async (payload) => {
+//   try {
+//       const token = localStorage.getItem('token');
+//       const response = await axios.post(
+//           '${API_URL}/itinerary/create',
+//           payload,
+//           {
+//               headers: {
+//                   'Authorization': `Bearer ${token}`
+//               }
+//           }
+//       );
+//       return response.data;
+//   } catch (error) {
+//       throw error.response?.data || error;
+//   }
+// };
 
 // callapi.js
 
@@ -522,24 +504,30 @@ export const createBulkActivities = async (data) => {
 };
 export const getItinerary = async (itineraryId) => {
   try {
+    
+    if (!itineraryId) {
+      throw new Error('ID hành trình không được để trống');
+    }
+
     const token = localStorage.getItem('token');
-    const response = await fetch(`${API_URL}/itinerary/getById/${itineraryId}`, {
+    const response = await fetch(`${API_URL}/itinerary/getById`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`, // Thêm mã thông báo vào tiêu đề
+        'Authorization': `Bearer ${token}`,
       },
+      body: JSON.stringify({ itineraryId })
     });
 
     if (response.ok) {
       const data = await response.json();
-      return data; // Trả về dữ liệu nhận được từ server
+      return data;
     } else {
       throw new Error('Lỗi khi lấy lộ trình: ' + response.statusText);
     }
   } catch (error) {
     console.error('Lỗi kết nối API:', error);
-    throw error; // Đẩy lỗi lên để có thể xử lý ở nơi gọi hàm này
+    throw error;
   }
 };
 
@@ -644,6 +632,96 @@ export const submitActivityReview = async (reviewData) => {
     return data;
   } catch (error) {
     console.error('Lỗi khi gửi đánh giá:', error);
+    throw error;
+  }
+};
+
+/**
+ * Gửi yêu cầu DELETE để xóa ảnh
+
+ * @param {string} province - Tên tỉnh
+ * @param {string} photoId - ID của ảnh cần xóa
+ * @returns {Promise} - Trả về promise từ axios
+ */
+export const deletePhoto = async (province, photoId) => {
+  try {
+    const token = localStorage.getItem('token');
+    const response = await axios.delete(
+      `${API_URL}/upload/delete/${province}/${photoId}`,
+      {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      }
+    );
+
+    return response.data;
+  } catch (error) {
+    console.error('Lỗi khi xóa ảnh:', error.response?.data || error.message);
+    throw error;
+  }
+};
+export const getUserUploads = async () => {
+  try {
+    const token = localStorage.getItem('token');
+    const response = await axios.get(`${API_URL}/upload/getupload`, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Lỗi khi lấy danh sách ảnh:', error);
+    throw error;
+  }
+};
+
+export const updateProvinceStatus = async (provinceName) => {
+  try {
+    // Lấy token từ localStorage
+    const token = localStorage.getItem('token');
+    if (!token) {
+      throw new Error('Vui lòng đăng nhập để thực hiện thao tác này');
+    }
+
+    // Encode tên tỉnh để tránh lỗi với các ký tự đặc biệt
+    const encodedProvinceName = encodeURIComponent(provinceName);
+
+    const response = await axios.patch(
+      `${API_URL}/province/${encodedProvinceName}/status`,
+      {}, // empty body vì chỉ cần toggle status
+      {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      }
+    );
+
+    if (response.data.success) {
+      return {
+        success: true,
+        message: response.data.message,
+        data: response.data.data
+      };
+    } else {
+      throw new Error(response.data.message || 'Không thể cập nhật trạng thái');
+    }
+
+  } catch (error) {
+    // Xử lý các loại lỗi cụ thể
+    if (error.response) {
+      switch (error.response.status) {
+        case 401:
+          throw new Error('Phiên đăng nhập đã hết hạn, vui lòng đăng nhập lại');
+        case 404:
+          throw new Error(`Không tìm thấy tỉnh ${provinceName}`);
+        default:
+          throw new Error(error.response.data.message || 'Đã có lỗi xảy ra');
+      }
+    }
+
+    console.error('Error updating province status:', error);
     throw error;
   }
 };

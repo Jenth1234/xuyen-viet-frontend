@@ -45,31 +45,35 @@ const BannerTimeVote = () => {
 
   return (
     <div className="relative h-screen overflow-hidden">
-      {/* Background with overlay */}
+      {/* Background với hiệu ứng parallax */}
       <div 
-        className="absolute inset-0 bg-cover bg-center"
-        style={{ backgroundImage: `url(${bgVote})` }}
+        className="absolute inset-0 bg-cover bg-center bg-fixed transform scale-105"
+        style={{ 
+          backgroundImage: `url(${bgVote})`,
+          filter: 'brightness(0.8)'
+        }}
       >
-        <div className="absolute inset-0 bg-black bg-opacity-40"></div>
+        <div className="absolute inset-0 bg-gradient-to-br from-black/60 via-black/40 to-transparent"></div>
       </div>
 
-      {/* Content */}
-      <div className="relative h-full flex flex-col justify-center items-center text-white z-10">
-        <div className="text-center mb-12 px-4">
-          <h1 className="text-5xl font-bold mb-4 animate-fade-in">
+      {/* Content với animation */}
+      <div className="relative h-full flex flex-col justify-center items-center text-white z-10 px-4">
+        <div className="text-center mb-16 animate-fade-in">
+          <h1 className="text-6xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-yellow-200 to-yellow-500
+            animate-pulse">
             Bình Chọn Điểm Đến Yêu Thích
           </h1>
-          <p className="text-xl text-gray-200 max-w-2xl mx-auto">
+          <p className="text-2xl text-gray-200 max-w-3xl mx-auto font-light leading-relaxed">
             Hãy là người góp phần tạo nên những điểm đến tuyệt vời nhất Việt Nam
           </p>
         </div>
 
-        {/* Countdown Timer */}
-        <div className="text-center">
-          <h2 className="text-2xl font-semibold mb-6 text-yellow-400">
+        {/* Countdown Timer với glass effect */}
+        <div className="text-center backdrop-blur-sm bg-white/10 p-8 rounded-2xl">
+          <h2 className="text-3xl font-bold mb-8 bg-gradient-to-r from-yellow-300 to-yellow-500 bg-clip-text text-transparent">
             Thời Gian Còn Lại
           </h2>
-          <div className="flex space-x-6">
+          <div className="flex space-x-8">
             {[
               { value: timeRemaining.days, label: 'Ngày' },
               { value: timeRemaining.hours, label: 'Giờ' },
@@ -78,41 +82,53 @@ const BannerTimeVote = () => {
             ].map((item, index) => (
               <React.Fragment key={index}>
                 <div className="flex flex-col items-center">
-                  <div className="bg-white bg-opacity-90 rounded-xl p-6 backdrop-blur-sm shadow-lg transform hover:scale-105 transition-transform duration-300">
-                    <span className="text-4xl font-bold text-gray-800 block min-w-[60px]">
+                  <div className="bg-white/90 rounded-2xl p-8 backdrop-blur-lg shadow-2xl
+                    transform hover:scale-110 transition-all duration-500 hover:shadow-yellow-500/20
+                    border border-yellow-500/20">
+                    <span className="text-5xl font-bold bg-gradient-to-br from-yellow-600 to-orange-600 
+                      bg-clip-text text-transparent block min-w-[80px]">
                       {String(item.value).padStart(2, '0')}
                     </span>
-                    <span className="text-sm font-medium text-gray-600 mt-2 block">
+                    <span className="text-base font-medium text-gray-600 mt-3 block uppercase tracking-wider">
                       {item.label}
                     </span>
                   </div>
                 </div>
                 {index < 3 && (
-                  <div className="text-4xl font-bold self-center text-yellow-400">:</div>
+                  <div className="text-5xl font-bold self-center animate-pulse text-yellow-400">:</div>
                 )}
               </React.Fragment>
             ))}
           </div>
         </div>
 
-        {/* Call to Action Button */}
-        <div className="mt-12">
-          <button className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white px-8 py-4 rounded-full font-bold text-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300">
-            Bình Chọn Ngay
+        {/* Call to Action Button với animation */}
+        <div className="mt-16">
+          <button className="relative overflow-hidden group px-10 py-5 rounded-full font-bold text-xl
+            bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500 text-white
+            shadow-lg hover:shadow-2xl transform hover:scale-105 transition-all duration-500">
+            <span className="relative z-10">Bình Chọn Ngay</span>
+            <div className="absolute inset-0 bg-gradient-to-r from-yellow-500 via-orange-600 to-red-600 
+              opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
           </button>
         </div>
       </div>
 
-      {/* Scroll to Top Button */}
+      {/* Scroll to Top Button với animation */}
       <button
-        className="fixed bottom-8 right-8 bg-gradient-to-r from-orange-500 to-red-600 p-4 rounded-full shadow-lg hover:shadow-xl transform hover:scale-110 transition-all duration-300 z-50"
+        className="fixed bottom-8 right-8 p-4 rounded-full shadow-lg z-50
+          bg-gradient-to-r from-yellow-400 to-orange-500 
+          hover:from-yellow-500 hover:to-orange-600
+          transform hover:scale-110 transition-all duration-300
+          animate-bounce"
         onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
       >
         <i className="fas fa-arrow-up text-white text-xl"></i>
       </button>
 
       {/* Decorative Elements */}
-      <div className="absolute bottom-0 left-0 w-full h-32 bg-gradient-to-t from-black to-transparent opacity-50"></div>
+      <div className="absolute bottom-0 left-0 w-full h-48 
+        bg-gradient-to-t from-black via-black/50 to-transparent"></div>
     </div>
   );  
 };

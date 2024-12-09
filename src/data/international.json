@@ -120,6 +120,8 @@
         { "code": "MM", "name": "Myanmar" },
         { "code": "NA", "name": "Namibia" },
         { "code": "NR", "name": "Nauru" },
-        { "code": "NP", "name": "Nepal" }
+        { "code": "VN", "name": "Vietnam" }
+     
+
     ]
 }
